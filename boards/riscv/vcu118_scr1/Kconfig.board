@@ -1,0 +1,4 @@
+
+config BOARD_VCU118_SCR1
+	bool "VCU118 FPGA scr1 target"
+	depends on SOC_RISCV32_SCR1

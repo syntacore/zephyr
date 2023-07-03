@@ -1,0 +1,19 @@
+# Kconfig - RISCV64_SCR7 SoC implementation
+#
+# Copyright (C) Syntacore 2022. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+config SOC_SERIES_RISCV64_SCR7
+	bool "Syntacore SCR7-based SoC implementation"
+	select RISCV
+	select RISCV_GP
+	select 64BIT
+	select SOC_FAMILY_RISCV_PRIVILEGED
+	select SYNTACORE_SCR
+	select CPU_HAS_DCACHE
+	select CPU_HAS_ICACHE
+	select RISCV_EARLY_INIT_SECONDARY if (MP_MAX_NUM_CPUS > 1)
+	help
+	Enable support for Syntacore SCR7-based SoC

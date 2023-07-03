@@ -1,0 +1,21 @@
+# Kconfig - RISCV32_SCR1 SoC configuration options
+#
+# Copyright (C) Syntacore 2017-2022. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+choice
+prompt "Syntacore SCR1-based SoC implementation"
+depends on SOC_SERIES_RISCV32_SCR1
+
+config SOC_RISCV32_SCR1
+	bool "Syntacore SCR1-based SoC implementation"
+	select ATOMIC_OPERATIONS_C
+	select RISCV_ISA_EXT_M
+	select RISCV_ISA_EXT_A
+	select RISCV_ISA_EXT_C
+	select RISCV_ISA_EXT_ZICSR
+	select RISCV_ISA_EXT_ZIFENCEI
+
+endchoice

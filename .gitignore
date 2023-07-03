@@ -14,8 +14,10 @@ build*/
 !scripts/build
 !tests/drivers/build_all
 !scripts/pylib/build_helpers
+!.gitlab-scr-ci.d/
 cscope.*
 .dir
+Debug/
 
 /*.patch
 

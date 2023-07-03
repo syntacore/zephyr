@@ -184,15 +184,25 @@ config RISCV_PMP
 	bool "RISC-V PMP Support"
 	select THREAD_STACK_INFO
 	select CPU_HAS_MPU
-	select ARCH_HAS_USERSPACE
-	select ARCH_HAS_STACK_PROTECTION
 	select MPU
-	select SRAM_REGION_PERMISSIONS
 	select ARCH_MEM_DOMAIN_SYNCHRONOUS_API if USERSPACE
 	select ARCH_MEM_DOMAIN_DATA if USERSPACE
 	select THREAD_LOCAL_STORAGE if USERSPACE
 	help
 	  MCU implements Physical Memory Protection.
+	  
+config RISCV_EARLY_INIT_SECONDARY
+	bool "RISC-V Secondary cores early initialilzation"
+	depends on (MP_MAX_NUM_CPUS > 1)
+	default n
+	help
+	  Enables Secondary cores early initialilzation.
+	  This may be useful to bring the Secondary cores
+	  to a known state required for further initialization,
+	  e.g. to pre-configure Caches, Memory protection, etc.
+	  
+	  The implementation should be in Assembler or in C with stack
+	  protection disabled to avoid race condition with Primary core.
 
 if RISCV_PMP
 
@@ -239,6 +249,15 @@ config PMP_GRANULARITY
 	  (ie 4, 8, 16, ...), but if neither TOR mode nor NA4 mode is
 	  supported, the minimum granularity is 8.
 
+config ARCH_HAS_STACK_PROTECTION
+	default y
+
+config SRAM_REGION_PERMISSIONS
+	default y
+
+config ARCH_HAS_USERSPACE
+	default y
+
 endif #RISCV_PMP
 
 config PMP_STACK_GUARD
@@ -266,6 +285,9 @@ endmenu
 config MAIN_STACK_SIZE
 	default 4096 if 64BIT
 	default 2048 if PMP_STACK_GUARD
+
+config IDLE_STACK_SIZE
+	default 1024 if 64BIT
 
 config TEST_EXTRA_STACK_SIZE
 	default 1536

@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) 2022 Syntacore
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#include <mem.h>
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu0: cpu@0 {
+			reg = <0>;
+			clock-frequency = <90000000>;
+			compatible ="scr,scr1", "riscv";
+		};
+
+		CPU_intc: interrupt-controller {
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			compatible = "riscv,cpu-intc";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "scr,scr1-soc";
+		ranges;
+
+		mtimer: timer@f0040000 {
+			compatible = "scr,machine-timer";
+			reg = <0xf0040000 0x1000>;
+			interrupts = <7>;
+			interrupt-parent = < &CPU_intc >;
+		};
+		
+		ipic: interrupt-controller@bf0 {
+			compatible = "riscv,scr-ipic";
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			interrupts-extended = <&CPU_intc 11>;
+
+			reg = <0xbf0 0x10>;
+		};
+
+		uart0: serial@ff010000 {
+			compatible = "ns16550";
+			reg-shift = < 2 >;
+			reg = <0xff010000 0x40>;
+			current-speed = <115200>;
+			clock-frequency = <90000000>;
+			status = "okay";
+
+			interrupts = <0>;
+			interrupt-parent = < &ipic >;
+		};
+	};
+};

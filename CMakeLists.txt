@@ -1669,7 +1669,7 @@ if(CONFIG_BUILD_OUTPUT_S19)
 endif()
 
 if(CONFIG_OUTPUT_DISASSEMBLY)
-if(CONFIG_OUTPUT_DISASSEMBLE_ALL)
+  if(CONFIG_OUTPUT_DISASSEMBLE_ALL)
     set(disassembly_type "$<TARGET_PROPERTY:bintools,disassembly_flag_all>")
   else()
     set(disassembly_type "$<TARGET_PROPERTY:bintools,disassembly_flag_inline_source>")
@@ -1687,6 +1687,19 @@ if(CONFIG_OUTPUT_DISASSEMBLE_ALL)
     post_build_byproducts
     ${KERNEL_LST_NAME}
 #    ${out_disassembly_byprod} # Needed ??
+    )
+
+  list(APPEND
+    post_build_commands
+    COMMAND $<TARGET_PROPERTY:bintools,disassembly_command>
+            $<TARGET_PROPERTY:bintools,disassembly_flag>
+            $<TARGET_PROPERTY:bintools,disassembly_flag_infile>${KERNEL_ELF_NAME}
+            $<TARGET_PROPERTY:bintools,disassembly_flag_outfile>${KERNEL_DUMP_NAME}
+            $<TARGET_PROPERTY:bintools,disassembly_flag_final>
+    )
+  list(APPEND
+    post_build_byproducts
+    ${KERNEL_DUMP_NAME}
     )
 endif()
 

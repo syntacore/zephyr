@@ -132,7 +132,9 @@ static void dump_pmp_regs(const char *banner)
 #endif
 #endif
 
-	print_pmp_entries(0, CONFIG_PMP_SLOTS, pmp_addr, pmp_cfg, banner);
+	if (PMP_DEBUG_DUMP) {
+		print_pmp_entries(0, CONFIG_PMP_SLOTS, pmp_addr, pmp_cfg, banner);
+	}
 }
 
 /**
@@ -152,7 +154,7 @@ static void dump_pmp_regs(const char *banner)
  * @param index_limit Index value representing the size of the provided arrays.
  * @return true on success, false when out of free PMP slots.
  */
-static bool set_pmp_entry(unsigned int *index_p, uint8_t perm,
+bool z_riscv_set_pmp_entry(unsigned int *index_p, uint8_t perm,
 			  uintptr_t start, size_t size,
 			  unsigned long *pmp_addr, unsigned long *pmp_cfg,
 			  unsigned int index_limit)
@@ -207,26 +209,6 @@ static bool set_pmp_entry(unsigned int *index_p, uint8_t perm,
 /**
  * @brief Write a range of PMP entries to corresponding PMP registers
  *
- * PMP registers are accessed with the csr instruction which only takes an
- * immediate value as the actual register. This is performed more efficiently
- * in assembly code (pmp.S) than what is possible with C code.
- *
- * Requirement: start < end && end <= CONFIG_PMP_SLOTS
- *
- * @param start Start of the PMP range to be written
- * @param end End (exclusive) of the PMP range to be written
- * @param clear_trailing_entries True if trailing entries must be turned off
- * @param pmp_addr Array of pmpaddr values (starting at entry 0).
- * @param pmp_cfg Array of pmpcfg values (starting at entry 0).
- */
-extern void z_riscv_write_pmp_entries(unsigned int start, unsigned int end,
-				      bool clear_trailing_entries,
-				      const unsigned long *pmp_addr,
-				      const unsigned long *pmp_cfg);
-
-/**
- * @brief Write a range of PMP entries to corresponding PMP registers
- *
  * This performs some sanity checks before calling z_riscv_write_pmp_entries().
  *
  * @param start Start of the PMP range to be written
@@ -265,7 +247,9 @@ static void write_pmp_entries(unsigned int start, unsigned int end,
 		}
 	}
 
-	print_pmp_entries(start, end, pmp_addr, pmp_cfg, "register write");
+	if (PMP_DEBUG_DUMP) {
+		print_pmp_entries(start, end, pmp_addr, pmp_cfg, "register write");
+	}
 
 #ifdef CONFIG_QEMU_TARGET
 	/*
@@ -287,7 +271,7 @@ static void write_pmp_entries(unsigned int start, unsigned int end,
 }
 
 /**
- * @brief Abstract the last 3 arguments to set_pmp_entry() and
+ * @brief Abstract the last 3 arguments to z_riscv_set_pmp_entry() and
  *        write_pmp_entries( for m-mode.
  */
 #define PMP_M_MODE(thread) \
@@ -296,7 +280,7 @@ static void write_pmp_entries(unsigned int start, unsigned int end,
 	ARRAY_SIZE(thread->arch.m_mode_pmpaddr_regs)
 
 /**
- * @brief Abstract the last 3 arguments to set_pmp_entry() and
+ * @brief Abstract the last 3 arguments to z_riscv_set_pmp_entry() and
  *        write_pmp_entries( for u-mode.
  */
 #define PMP_U_MODE(thread) \
@@ -318,14 +302,14 @@ static unsigned int global_pmp_end_index;
 /**
  * @Brief Initialize the PMP with global entries on each CPU
  */
-void z_riscv_pmp_init(void)
+__weak void z_riscv_pmp_init(void)
 {
 	unsigned long pmp_addr[4];
 	unsigned long pmp_cfg[1];
 	unsigned int index = 0;
 
 	/* The read-only area is always there for every mode */
-	set_pmp_entry(&index, PMP_R | PMP_X | PMP_L,
+	z_riscv_set_pmp_entry(&index, PMP_R | PMP_X | PMP_L,
 		      (uintptr_t)__rom_region_start,
 		      (size_t)__rom_region_size,
 		      pmp_addr, pmp_cfg, ARRAY_SIZE(pmp_addr));
@@ -336,7 +320,7 @@ void z_riscv_pmp_init(void)
 	 * addresses inaccessible. This will never change so we do it here
 	 * and lock it too.
 	 */
-	set_pmp_entry(&index, PMP_NONE | PMP_L,
+	z_riscv_set_pmp_entry(&index, PMP_NONE | PMP_L,
 		      (uintptr_t)z_interrupt_stacks[_current_cpu->id],
 		      Z_RISCV_STACK_GUARD_SIZE,
 		      pmp_addr, pmp_cfg, ARRAY_SIZE(pmp_addr));
@@ -387,7 +371,7 @@ static inline unsigned int z_riscv_pmp_thread_init(unsigned long *pmp_addr,
 
 	/*
 	 * Retrieve the pmpaddr value matching the last global PMP slot.
-	 * This is so that set_pmp_entry() can safely attempt TOR with it.
+	 * This is so that z_riscv_set_pmp_entry() can safely attempt TOR with it.
 	 */
 	pmp_addr[global_pmp_end_index - 1] = global_pmp_last_addr;
 
@@ -415,7 +399,7 @@ void z_riscv_pmp_stackguard_prepare(struct k_thread *thread)
 		stack_bottom = thread->stack_info.start - K_THREAD_STACK_RESERVED;
 	}
 #endif
-	set_pmp_entry(&index, PMP_NONE,
+	z_riscv_set_pmp_entry(&index, PMP_NONE,
 		      stack_bottom, Z_RISCV_STACK_GUARD_SIZE,
 		      PMP_M_MODE(thread));
 
@@ -424,7 +408,7 @@ void z_riscv_pmp_stackguard_prepare(struct k_thread *thread)
 	 * accessible as if no PMP entries were matched which is otherwise
 	 * the default behavior for m-mode without MPRV.
 	 */
-	set_pmp_entry(&index, PMP_R | PMP_W | PMP_X,
+	z_riscv_set_pmp_entry(&index, PMP_R | PMP_W | PMP_X,
 		      0, 0, PMP_M_MODE(thread));
 #ifdef CONFIG_QEMU_TARGET
 	/*
@@ -497,7 +481,7 @@ void z_riscv_pmp_usermode_prepare(struct k_thread *thread)
 	LOG_DBG("pmp_usermode_prepare for thread %p", thread);
 
 	/* Map the usermode stack */
-	set_pmp_entry(&index, PMP_R | PMP_W,
+	z_riscv_set_pmp_entry(&index, PMP_R | PMP_W,
 		      thread->stack_info.start, thread->stack_info.size,
 		      PMP_U_MODE(thread));
 
@@ -536,7 +520,7 @@ static void resync_pmp_domain(struct k_thread *thread,
 			continue;
 		}
 
-		ok = set_pmp_entry(&index, part->attr.pmp_attr,
+		ok = z_riscv_set_pmp_entry(&index, part->attr.pmp_attr,
 				   part->start, part->size, PMP_U_MODE(thread));
 		__ASSERT(ok,
 			 "no PMP slot left for %d remaining partitions in domain %p",

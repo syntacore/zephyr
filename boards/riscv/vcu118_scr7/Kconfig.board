@@ -1,0 +1,4 @@
+
+config BOARD_VCU118_SCR7
+	bool "VCU118 FPGA scr7 target"
+	depends on SOC_RISCV64_SCR7

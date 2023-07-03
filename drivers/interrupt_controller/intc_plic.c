@@ -22,9 +22,16 @@
 #include <zephyr/irq.h>
 
 #define PLIC_MAX_PRIO	DT_INST_PROP(0, riscv_max_priority)
+
+#if IS_ENABLED(CONFIG_64BIT)
+#define PLIC_PRIO	UINT64_C(DT_INST_REG_ADDR_BY_NAME(0, prio))
+#define PLIC_IRQ_EN	UINT64_C(DT_INST_REG_ADDR_BY_NAME(0, irq_en))
+#define PLIC_REG	UINT64_C(DT_INST_REG_ADDR_BY_NAME(0, reg))
+#else
 #define PLIC_PRIO	DT_INST_REG_ADDR_BY_NAME(0, prio)
 #define PLIC_IRQ_EN	DT_INST_REG_ADDR_BY_NAME(0, irq_en)
 #define PLIC_REG	DT_INST_REG_ADDR_BY_NAME(0, reg)
+#endif /* CONFIG_64BIT */
 
 #define PLIC_IRQS        (CONFIG_NUM_IRQS - CONFIG_2ND_LVL_ISR_TBL_OFFSET)
 #define PLIC_EN_SIZE     ((PLIC_IRQS >> 5) + 1)

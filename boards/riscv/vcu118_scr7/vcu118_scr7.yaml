@@ -1,0 +1,13 @@
+identifier: vcu118_scr7
+name: VCU118 FPGA SCR7
+type: mcu
+# Please comment "simulation: qemu" in order to run twister on real HW
+simulation: qemu
+arch: riscv64
+toolchain:
+  - zephyr
+ram: 4096
+testing:
+  ignore_tags:
+    - net
+    - bluetooth

@@ -1,0 +1,89 @@
+if SOC_SERIES_RISCV64_SCR7
+
+config SOC_SERIES
+	string
+	default "scr7"
+
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	int
+	default 65000000
+
+config RISCV_SOC_INTERRUPT_INIT
+	bool
+	default y
+
+config RISCV_HAS_CPU_IDLE
+	bool
+	default y
+
+config RISCV_HAS_PLIC
+	bool
+	default y
+	
+config MINIMAL_LIBC_OPTIMIZE_STRING_FOR_SIZE
+	bool
+	default n
+
+config FPU
+	bool "FPU unit"
+	default y
+	help
+		This option enables Floating Point Unit
+
+config CPU_HAS_FPU_DOUBLE_PRECISION
+	bool "Double precision FPU"
+	default y
+	help
+		This option enables Double Floating Point precision Unit
+
+config FLOAT_HARD
+	bool "Hard-float ABI"
+	default y
+	help
+		This option enables HW Floating Point ABI
+
+config 2ND_LVL_ISR_TBL_OFFSET
+	default 12
+
+config 2ND_LVL_INTR_00_OFFSET
+	default 11
+
+config MAX_IRQ_PER_AGGREGATOR
+	default 4
+
+config NUM_IRQS
+	int
+	default 128
+
+config ICACHE_LINE_SIZE
+	default 16
+
+config DCACHE_LINE_SIZE
+	default 16
+
+config XIP
+	bool
+	default y
+
+config SCR_MPU
+	bool "Syntacore MPU"
+	default y
+	help
+		This option enables Syntacore Memory Protection Unit
+
+config SCR_L1_CACHE
+	bool "Syntacore L1 cache"
+	default y
+	help
+		This option enables Syntacore L1 cache
+
+config SCR_L2_CACHE
+	bool "Syntacore L2 cache"
+	default y
+	help
+		This option enables Syntacore L2 cache
+
+config CACHE_MANAGEMENT
+	default y if SCR_L1_CACHE || SCR_L2_CACHE
+
+endif # SOC_SERIES_RISCV64_SCR7

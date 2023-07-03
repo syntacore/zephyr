@@ -26,7 +26,7 @@ set_property(TARGET bintools PROPERTY elfconvert_command ${CMAKE_OBJCOPY})
 
 # List of format the tool supports for converting, for example,
 # GNU tools uses objectcopy, which supports the following: ihex, srec, binary
-set_property(TARGET bintools PROPERTY elfconvert_formats ihex srec binary)
+set_property(TARGET bintools PROPERTY elfconvert_formats srec binary)
 
 set_property(TARGET bintools PROPERTY elfconvert_flag "")
 set_property(TARGET bintools PROPERTY elfconvert_flag_final "")

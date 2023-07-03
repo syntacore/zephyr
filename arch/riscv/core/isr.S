@@ -74,6 +74,26 @@ GDATA(_k_syscall_table)
 
 /* exports */
 GTEXT(_isr_wrapper)
+GTEXT(z_riscv_run_in_s_mode)
+
+SECTION_FUNC(TEXT, z_riscv_run_in_s_mode)
+	/* Configure function to run */
+	csrw mepc, a0
+	/* Save caller-saved registers on current thread stack. */
+	addi sp, sp, -__z_arch_esf_t_SIZEOF
+	DO_CALLER_SAVED(sr)		;
+	/* Make us return to leave_s_mode */
+	la ra, leave_s_mode
+	/* Enter S-Mode */
+	mret
+
+leave_s_mode:
+	/* Restore caller-saved registers from thread stack */
+	DO_CALLER_SAVED(lr)
+	/* remove esf from the stack */
+	addi sp, sp, __z_arch_esf_t_SIZEOF
+	/* Return to M-Mode */
+	ecall
 
 /* use ABI name of registers for the sake of simplicity */
 
@@ -287,6 +307,13 @@ no_fp:	/* increment _current->arch.exception_depth */
 	 */
 	li t1, SOC_MCAUSE_ECALL_EXP
 	beq t0, t1, is_kernel_syscall
+
+	/*
+	 * If mcause == SOC_MCAUSE_SUPERVISOR_ECALL_EXP, just restore the
+	 * context and proceed in M-mode
+	 */
+	li t1, SOC_MCAUSE_SUPERVISOR_ECALL_EXP
+	beq t0, t1, recover_in_m_mode
 
 #ifdef CONFIG_USERSPACE
 	/*
@@ -658,6 +685,7 @@ fp_trap_exit:
 	/* Restore s0 (it is no longer ours) */
 	lr s0, __z_arch_esf_t_s0_OFFSET(sp)
 
+	/* Recover is S-mode */
 #ifdef CONFIG_RISCV_SOC_HAS_ISR_STACKING
 	SOC_ISR_SW_UNSTACKING
 #else
@@ -673,5 +701,48 @@ fp_trap_exit:
 #endif
 
 #endif /* CONFIG_RISCV_SOC_HAS_ISR_STACKING */
+	mret
 
+recover_in_m_mode:
+#if defined(CONFIG_FPU_SHARING)
+	/* FPU handling upon exception mode exit */
+	mv a0, sp
+	call z_riscv_fpu_exit_exc
+
+	/* decrement _current->arch.exception_depth */
+	lr t0, ___cpu_t_current_OFFSET(s0)
+	lb t1, _thread_offset_to_exception_depth(t0)
+	add t1, t1, -1
+	sb t1, _thread_offset_to_exception_depth(t0)
+#endif
+
+	/* Restore MSTATUS and patch MPP to remain in M-mode */
+	li t0, MSTATUS_MPP
+	not t0, t0
+	lr t1, __z_arch_esf_t_mstatus_OFFSET(sp)
+	and t1, t0, t1
+	li t0, MSTATUS_MPP_M
+	or t1, t0, t1
+	csrw mstatus, t1
+
+	/* Restore s0 (it is no longer ours) */
+	lr s0, __z_arch_esf_t_s0_OFFSET(sp)
+
+	/* Recover is M-mode */
+#ifdef CONFIG_RISCV_SOC_HAS_ISR_STACKING
+	SOC_ISR_SW_UNSTACKING
+#else
+	/* Restore caller-saved registers from thread stack */
+	DO_CALLER_SAVED(lr)
+
+	/* remove esf from the stack */
+	addi sp, sp, __z_arch_esf_t_SIZEOF
+
+#endif /* CONFIG_RISCV_SOC_HAS_ISR_STACKING */
+
+	/*
+	 * Configure PC from which to continue in M-mode
+	 * after mret
+	 */
+	csrw mepc, ra
 	mret

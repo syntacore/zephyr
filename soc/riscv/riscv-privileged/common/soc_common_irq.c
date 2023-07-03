@@ -13,6 +13,7 @@
 
 #include <zephyr/drivers/interrupt_controller/riscv_clic.h>
 #include <zephyr/drivers/interrupt_controller/riscv_plic.h>
+#include <zephyr/drivers/interrupt_controller/riscv_ipic.h>
 
 #if defined(CONFIG_RISCV_HAS_CLIC)
 
@@ -38,16 +39,26 @@ void z_riscv_irq_priority_set(unsigned int irq, unsigned int prio, uint32_t flag
 
 #else /* PLIC + HLINT/CLINT or HLINT/CLINT only */
 
+#if defined(CONFIG_RISCV_HAS_PLIC)
+#define riscv_ic_irq_enable riscv_plic_irq_enable
+#define riscv_ic_irq_disable riscv_plic_irq_disable
+#define riscv_ic_irq_is_enabled riscv_plic_irq_is_enabled
+#elif defined(CONFIG_RISCV_HAS_IPIC)
+#define riscv_ic_irq_enable riscv_ipic_irq_enable
+#define riscv_ic_irq_disable riscv_ipic_irq_disable
+#define riscv_ic_irq_is_enabled riscv_ipic_irq_is_enabled
+#endif
+
 void arch_irq_enable(unsigned int irq)
 {
 	uint32_t mie;
 
-#if defined(CONFIG_RISCV_HAS_PLIC)
+#if defined(CONFIG_RISCV_HAS_PLIC) || defined(CONFIG_RISCV_HAS_IPIC)
 	unsigned int level = irq_get_level(irq);
 
 	if (level == 2) {
 		irq = irq_from_level_2(irq);
-		riscv_plic_irq_enable(irq);
+		riscv_ic_irq_enable(irq);
 		return;
 	}
 #endif
@@ -63,12 +74,12 @@ void arch_irq_disable(unsigned int irq)
 {
 	uint32_t mie;
 
-#if defined(CONFIG_RISCV_HAS_PLIC)
+#if defined(CONFIG_RISCV_HAS_PLIC) || defined(CONFIG_RISCV_HAS_IPIC)
 	unsigned int level = irq_get_level(irq);
 
 	if (level == 2) {
 		irq = irq_from_level_2(irq);
-		riscv_plic_irq_disable(irq);
+		riscv_ic_irq_disable(irq);
 		return;
 	}
 #endif
@@ -84,12 +95,12 @@ int arch_irq_is_enabled(unsigned int irq)
 {
 	uint32_t mie;
 
-#if defined(CONFIG_RISCV_HAS_PLIC)
+#if defined(CONFIG_RISCV_HAS_PLIC) || defined(CONFIG_RISCV_HAS_IPIC)
 	unsigned int level = irq_get_level(irq);
 
 	if (level == 2) {
 		irq = irq_from_level_2(irq);
-		return riscv_plic_irq_is_enabled(irq);
+		return riscv_ic_irq_is_enabled(irq);
 	}
 #endif
 

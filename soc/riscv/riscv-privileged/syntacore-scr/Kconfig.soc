@@ -1,0 +1,10 @@
+# riscv SOC series supporting the riscv privileged architecture spec
+
+# Copyright (c) 2022 Syntacore
+# SPDX-License-Identifier: Apache-2.0
+
+config SYNTACORE_SCR
+	bool
+	depends on SOC_FAMILY_RISCV_PRIVILEGED
+
+source "soc/riscv/riscv-privileged/syntacore-scr/*/Kconfig.soc"

@@ -17,8 +17,9 @@
 #define RISCV_MACHINE_EXT_IRQ        11 /* Machine External Interrupt */
 
 /* ECALL Exception numbers */
-#define SOC_MCAUSE_ECALL_EXP         11 /* Machine ECALL instruction */
-#define SOC_MCAUSE_USER_ECALL_EXP    8  /* User ECALL instruction */
+#define SOC_MCAUSE_ECALL_EXP            11 /* Machine ECALL instruction */
+#define SOC_MCAUSE_SUPERVISOR_ECALL_EXP 9  /* Supervisor ECALL instruction */
+#define SOC_MCAUSE_USER_ECALL_EXP       8  /* User ECALL instruction */
 
 /* SOC-specific MCAUSE bitfields */
 #ifdef CONFIG_64BIT
@@ -36,6 +37,7 @@
 
 #include <zephyr/drivers/interrupt_controller/riscv_clic.h>
 #include <zephyr/drivers/interrupt_controller/riscv_plic.h>
+#include <zephyr/drivers/interrupt_controller/riscv_ipic.h>
 
 #if defined(CONFIG_RISCV_SOC_INTERRUPT_INIT)
 void soc_interrupt_init(void);

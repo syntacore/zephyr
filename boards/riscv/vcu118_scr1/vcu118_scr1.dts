@@ -1,0 +1,29 @@
+/*
+ * Copyright (c) 2022 Syntacore
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include "syntacore/scr1.dtsi"
+
+/ {
+	model = "vcu118_scr1";
+	compatible = "scr,vcu118_scr1";
+	
+	soc {
+		tcm: memory@f0000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xf0000000 DT_SIZE_K(64)>;
+			zephyr,memory-region = "TCM";
+		};
+	};
+
+	chosen {
+		zephyr,console = &uart0;
+		/* Use TCM as SRAM by default */
+		zephyr,sram = &tcm;
+	};
+};
+

@@ -31,5 +31,19 @@ static ALWAYS_INLINE unsigned int arch_num_cpus(void)
 	return CONFIG_MP_MAX_NUM_CPUS;
 }
 
+#ifdef CONFIG_RISCV_ISA_EXT_ZIFENCEI
+
+static inline void ifence(void)
+{
+    __asm__ volatile ("fence.i" ::: "memory");
+}
+
+#endif /* CONFIG_RISCV_ISA_EXT_ZIFENCEI */
+
+static inline void fence(void)
+{
+    __asm__ volatile ("fence" ::: "memory");
+}
+
 #endif /* !_ASMLANGUAGE */
 #endif /* ZEPHYR_INCLUDE_ARCH_RISCV_ARCH_INLINES_H_ */

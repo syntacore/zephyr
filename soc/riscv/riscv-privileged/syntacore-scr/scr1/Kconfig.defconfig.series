@@ -1,0 +1,49 @@
+if SOC_SERIES_RISCV32_SCR1
+
+config SOC_SERIES
+	string
+	default "scr1"
+
+config SYS_CLOCK_HW_CYCLES_PER_SEC
+	int
+	default 90000000
+
+config RISCV_SOC_INTERRUPT_INIT
+	bool
+	default y
+
+config RISCV_HAS_CPU_IDLE
+	bool
+	default y
+
+config RISCV_HAS_IPIC
+	bool
+	default y
+
+config 2ND_LVL_ISR_TBL_OFFSET
+	default 12
+
+config 2ND_LVL_INTR_00_OFFSET
+	default 11
+
+config NUM_IRQS
+	int
+	default 32
+
+config IPIC_STATIC_LINE_MAPPING
+	bool
+	default y
+
+config EXT_IPIC_IRQ_LN_NUM
+	int
+	default 16
+
+config XIP
+	bool
+	default y
+	
+config MINIMAL_LIBC_OPTIMIZE_STRING_FOR_SIZE
+	bool
+	default n
+
+endif # SOC_SERIES_RISCV32_SCR1

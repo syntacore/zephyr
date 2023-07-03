@@ -33,5 +33,11 @@ config RISCV_MTVEC_VECTORED_MODE
 	depends on SOC_FAMILY_RISCV_PRIVILEGED
 	help
 	  Should the SOC use mtvec in vectored mode
+	  
+config NO_BSS_INIT
+	bool "Disable SW BSS initialization"
+	default n
+	help
+	  This option disables SW BSS initialization
 
 source "soc/riscv/riscv-privileged/*/Kconfig.soc"

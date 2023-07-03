@@ -19,6 +19,7 @@ GTEXT(__reset)
 GTEXT(_PrepC)
 GTEXT(riscv_cpu_wake_flag)
 GTEXT(riscv_cpu_sp)
+GTEXT(riscv_early_init_secondary)
 GTEXT(z_riscv_secondary_cpu_init)
 
 #if CONFIG_INCLUDE_RESET_VECTOR
@@ -93,11 +94,54 @@ aa_loop:
 
 boot_secondary_core:
 #if CONFIG_MP_MAX_NUM_CPUS > 1
+#ifdef CONFIG_RISCV_EARLY_INIT_SECONDARY
+	/* Keep the current address of cpu array element in t0 */
+	la t0, riscv_cpu_node_list
+	/* Keep the array end address in t1 */
+	la t1, riscv_cpu_node_list_size
+	lb t1, 0(t1)
+	add t1, t0, t1
+
+check_next_node_id:
+	/* Keep next CPU's hartid in t2 */
+	lb t2, 0(t0)
+	/* Proceed with early initialization for a CPU with known hartid */
+	beq a0, t2, early_init_secondary
+	/* Check next array element */
+	addi t0, t0, 1
+	blt t0, t1, check_next_node_id
+	/* Park the CPUs with unknown hartid */
+	j loop_unconfigured_cores
+
+early_init_secondary:
+	/*
+	 * Setup stack for early initialization stage.
+	 * We follow the common Zephyr rule and reuse interrupt stack
+	 * during the early initialization.
+	 * Simplest stack layout is used.
+	 * When early initialization is complete the stack will
+	 * be reconfigured by Primary core.
+	 */
+	la sp, z_interrupt_stacks
+	li t0, __z_interrupt_stack_SIZEOF
+	shiftmul_add sp, a0, __z_interrupt_stack_SIZEOF
+	add sp, sp, t0
+
+	/*
+	 * Perform Secondary cores early initialization:
+	 * disable caches, relax memory protection
+	 */
+	call riscv_early_init_secondary
+	csrr a0, mhartid
+#endif /* CONFIG_RISCV_EARLY_INIT_SECONDARY */
+
+	/* Spin on wake flag which is to be raised by Primary core */
+secondary_core_spin_on_wake:
 	la t0, riscv_cpu_wake_flag
 	lr t0, 0(t0)
-	bne a0, t0, boot_secondary_core
+	bne a0, t0, secondary_core_spin_on_wake
 
-	/* Set up stack */
+	/* Apply stack provided by Master core to complete initialization in C-domain */
 	la t0, riscv_cpu_sp
 	lr sp, 0(t0)
 
@@ -106,7 +150,7 @@ boot_secondary_core:
 	j z_riscv_secondary_cpu_init
 #else
 	j loop_unconfigured_cores
-#endif
+#endif /* CONFIG_MP_MAX_NUM_CPUS > 1 */
 
 loop_unconfigured_cores:
 	wfi

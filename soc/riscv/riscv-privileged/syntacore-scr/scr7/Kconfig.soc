@@ -1,0 +1,23 @@
+# Kconfig - RISCV64_SCR7 SoC configuration options
+#
+# Copyright (C) Syntacore 2022. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+choice
+prompt "Syntacore SCR7-based SoC implementation"
+depends on SOC_SERIES_RISCV64_SCR7
+
+config SOC_RISCV64_SCR7
+	bool "Syntacore SCR7-based SoC implementation"
+	select RISCV_ISA_RV64I
+	select RISCV_ISA_EXT_M
+	select RISCV_ISA_EXT_A
+	select RISCV_ISA_EXT_C
+	select RISCV_ISA_EXT_F
+	select RISCV_ISA_EXT_D
+	select RISCV_ISA_EXT_ZICSR
+	select RISCV_ISA_EXT_ZIFENCEI
+
+endchoice

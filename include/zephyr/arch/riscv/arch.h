@@ -160,6 +160,7 @@
 
 #define MSTATUS_IEN     (1UL << 3)
 #define MSTATUS_MPP_M   (3UL << 11)
+#define MSTATUS_MPP_S   (1UL << 11)
 #define MSTATUS_MPIE_EN (1UL << 7)
 
 #define MSTATUS_FS_OFF   (0UL << 13)

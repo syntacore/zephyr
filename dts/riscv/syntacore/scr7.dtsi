@@ -1,0 +1,160 @@
+/*
+ * Copyright (c) 2022 Syntacore
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+#include <mem.h>
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		timebase-frequency = <timebase_freq:1000000>;
+
+		cpu0: cpu@0 {
+			device_type = cpu0_devtype:"cpu";
+			reg = <0>;
+			status = "okay";
+			compatible = "scr,scr7","riscv";
+			riscv,isa = "rv64imafdc_sscofpmf";
+			mmu-type = "riscv,sv39";
+			clock-frequency = <cpu0_freq:0>;
+
+			d-cache-block-size = <cpu0_dcbs: 16>;
+			d-cache-sets = <cpu0_dcs: 512>;
+			d-cache-size = <cpu0_dcsz: 32768>;
+			i-cache-block-size = <cpu0_icbs: 16>;
+			i-cache-sets = <cpu0_ics: 512>;
+			i-cache-size = <cpu0_icsz: 32768>;
+
+			next-level-cache = <&L2>;
+		};
+		
+		cpu1: cpu@1 {
+			device_type = cpu1_devtype:"cpu";
+			reg = <1>;
+			status = "okay";
+			compatible = "scr,scr7","riscv";
+			riscv,isa = "rv64imafdc_sscofpmf";
+			mmu-type = "riscv,sv39";
+			clock-frequency = <cpu1_freq:0>;
+
+			d-cache-block-size = <cpu1_dcbs: 16>;
+			d-cache-sets = <cpu1_dcs: 512>;
+			d-cache-size = <cpu1_dcsz: 32768>;
+			i-cache-block-size = <cpu1_icbs: 16>;
+			i-cache-sets = <cpu1_ics: 512>;
+			i-cache-size = <cpu1_icsz: 32768>;
+
+			next-level-cache = <&L2>;
+		};
+		
+		cpu2: cpu@2 {
+			device_type = cpu2_devtype:"cpu";
+			reg = <2>;
+			status = "okay";
+			compatible = "scr,scr7","riscv";
+			riscv,isa = "rv64imafdc_sscofpmf";
+			mmu-type = "riscv,sv39";
+			clock-frequency = <cpu2_freq:0>;
+
+			d-cache-block-size = <cpu2_dcbs: 16>;
+			d-cache-sets = <cpu2_dcs: 512>;
+			d-cache-size = <cpu2_dcsz: 32768>;
+			i-cache-block-size = <cpu2_icbs: 16>;
+			i-cache-sets = <cpu2_ics: 512>;
+			i-cache-size = <cpu2_icsz: 32768>;
+
+			next-level-cache = <&L2>;
+		};
+
+		cpu3: cpu@3 {
+			device_type = cpu3_devtype:"cpu";
+			reg = <3>;
+			status = "okay";
+			compatible = "scr,scr7","riscv";
+			riscv,isa = "rv64imafdc_sscofpmf";
+			mmu-type = "riscv,sv39";
+			clock-frequency = <cpu3_freq:0>;
+
+			d-cache-block-size = <cpu3_dcbs: 16>;
+			d-cache-sets = <cpu3_dcs: 512>;
+			d-cache-size = <cpu3_dcsz: 32768>;
+			i-cache-block-size = <cpu3_icbs: 16>;
+			i-cache-sets = <cpu3_ics: 512>;
+			i-cache-size = <cpu3_icsz: 32768>;
+
+			next-level-cache = <&L2>;
+		};
+	};
+
+	L2: l2-cache {
+		compatible = "scr,cache";
+		d-cache-line-size = <32>;
+		d-cache-size = <524288>;
+		i-cache-line-size = <32>;
+		i-cache-size = <524288>;
+	};
+
+	CPUx_intc: interrupt-controller {
+		#address-cells = <0>;
+		#interrupt-cells = <1>;
+		interrupt-controller;
+		compatible = "riscv,cpu-intc";
+	};
+
+	soc {
+		#address-cells = <2>;
+		#size-cells = <1>;
+		compatible = "scr,scr7-soc";
+		ranges;
+
+		mtimer: timer@fffffffff0040000 {
+			compatible = "scr,machine-timer";
+			reg = <0xffffffff 0xf0040000 0x1000>;
+			interrupts = <7>;
+			interrupt-parent = <&CPUx_intc>;
+		};
+
+		plic: interrupt-controller@fffffffffe000000 {
+			#interrupt-cells = <2>;
+			compatible = "sifive,plic-1.0.0", "riscv,plic0";
+			interrupt-controller;
+			interrupts-extended = <&CPUx_intc 11>;	
+
+			reg = <0xffffffff 0xfe000000 0x00001000
+			0xffffffff 0xfe002000  0x00004000
+			0xffffffff 0xfe200000  0x00040000 >;
+			reg-names = "prio", "irq_en", "reg";
+
+			riscv,max-priority = <4>;
+			riscv,ndev = <4>;
+		};
+
+		uart: serial@ffffffffff010000 {
+			compatible = "ns16550";
+			reg-shift = < 2 >;
+			reg = <0xffffffff 0xff010000 0x40>;
+			interrupt-parent = <&plic>;
+			interrupts = <1 1>; // IRQ PRIO
+			current-speed = <115200>;
+			clock-frequency = <65000000>;
+			status = "okay";
+		};
+
+		mpu: mpu@bc4 {
+			compatible = "scr,mpu";
+			reg = <0x0 0xbc4 0x1
+				0x0 0xbc5 0x1
+				0x0 0xbc6 0x1
+				0x0 0xbc7 0x1>;
+			reg-names = "select", "control", "address", "mask";
+			num-mpu-regions = <16>;
+		};
+	};
+};

@@ -1,0 +1,15 @@
+# Kconfig - RISCV32_SCR1 SoC implementation
+#
+# Copyright (C) Syntacore 2017-2022. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+config SOC_SERIES_RISCV32_SCR1
+	bool "Syntacore SCR1-based SoC implementation"
+	select RISCV
+	select SOC_FAMILY_RISCV_PRIVILEGED
+	select SYNTACORE_SCR
+	select RISCV_HAS_IPIC
+	help
+	Enable support for Syntacore SCR1-based SoC

@@ -1,0 +1,6 @@
+if BOARD_VCU118_SCR7
+
+config BOARD
+	default "vcu118_scr7"
+
+endif
