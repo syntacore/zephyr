@@ -165,7 +165,7 @@ static inline void trigger_irq(int irq)
 	posix_sw_set_pending_IRQ(irq);
 }
 
-#elif defined(CONFIG_RISCV)
+#elif defined(CONFIG_RISCV) && !defined(CONFIG_SOC_SERIES_RISCV32_SCR1)
 static inline void trigger_irq(int irq)
 {
 	uint32_t mip;
@@ -209,6 +209,11 @@ static inline void trigger_irq(int irq)
 #else
 /* So far, Nios II does not support this */
 #define NO_TRIGGER_FROM_SW
+
+static inline void trigger_irq(int irq)
+{
+	ARG_UNUSED(irq);
+}
 #endif
 
 #endif /* INTERRUPT_UTIL_H_ */

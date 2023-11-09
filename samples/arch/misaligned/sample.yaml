@@ -1,0 +1,8 @@
+sample:
+  description: Misaligned access test
+    application
+  name: misaligned
+common:
+  integration_platforms:
+    - native_posix
+  harness: console

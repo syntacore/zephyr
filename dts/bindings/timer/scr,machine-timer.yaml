@@ -1,0 +1,20 @@
+# Copyright (c) Syntacore 2022. All rights reserved.
+
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  SCR Machine Timer
+
+  The Syntacore machine timer provides RISC-V privileged mtime and mtimecmp
+  registers.
+
+compatible: "scr,machine-timer"
+
+include: base.yaml
+
+properties:
+    reg:
+      required: true
+
+    interrupts:
+      required: true

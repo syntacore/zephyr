@@ -1,0 +1,6 @@
+if BOARD_SCR1
+
+config BOARD
+	default "scr1"
+
+endif

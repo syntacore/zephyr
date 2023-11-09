@@ -1,0 +1,4 @@
+
+config BOARD_SCR1
+	bool "SCR1 evaluation board"
+	depends on SOC_RISCV32_SCR1

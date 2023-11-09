@@ -21,7 +21,7 @@
 #include <zephyr/drivers/interrupt_controller/riscv_plic.h>
 #include <zephyr/irq.h>
 
-#define PLIC_BASE_ADDR(n) DT_INST_REG_ADDR(n)
+#define PLIC_BASE_ADDR(n) DT_INST_REG_ADDR_U64(n)
 /*
  * These registers' offset are defined in the RISCV PLIC specs, see:
  * https://github.com/riscv/riscv-plic-spec
@@ -37,9 +37,20 @@
 #define PLIC_REG_TRIG_TYPE_OFFSET 0x1080
 
 #define PLIC_MAX_PRIO	DT_INST_PROP(0, riscv_max_priority)
+
+/*
+ * FIXME: SCR PLIC is not always compliant with the Spec, see #36689 and
+ * 39433f0669f1fd620f36605d1c3df61a6cf97ae2
+ */
+#if 0
 #define PLIC_PRIO	(PLIC_BASE_ADDR(0) + PLIC_REG_PRIO_OFFSET)
 #define PLIC_IRQ_EN	(PLIC_BASE_ADDR(0) + PLIC_REG_IRQ_EN_OFFSET)
 #define PLIC_REG	(PLIC_BASE_ADDR(0) + PLIC_REG_REGS_OFFSET)
+#else
+#define PLIC_PRIO	DT_INST_REG_ADDR_BY_NAME_U64(0, prio)
+#define PLIC_IRQ_EN	DT_INST_REG_ADDR_BY_NAME_U64(0, irq_en)
+#define PLIC_REG	DT_INST_REG_ADDR_BY_NAME_U64(0, reg)
+#endif
 
 #define PLIC_IRQS        (CONFIG_NUM_IRQS - CONFIG_2ND_LVL_ISR_TBL_OFFSET)
 #define PLIC_EN_SIZE     ((PLIC_IRQS >> 5) + 1)
@@ -67,10 +78,13 @@ static int save_irq;
  */
 static int riscv_plic_is_edge_irq(uint32_t irq)
 {
-	volatile uint32_t *trig = (volatile uint32_t *)PLIC_EDGE_TRIG_TYPE;
+	if (IS_ENABLED(CONFIG_PLIC_SUPPORTS_EDGE_IRQ)) {
+		volatile uint32_t *trig = (volatile uint32_t *)PLIC_EDGE_TRIG_TYPE;
 
-	trig += (irq >> PLIC_EDGE_TRIG_SHIFT);
-	return *trig & BIT(irq);
+		trig += (irq >> PLIC_EDGE_TRIG_SHIFT);
+		return *trig & BIT(irq);
+	}
+	return 0;
 }
 
 /**

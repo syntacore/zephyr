@@ -1,0 +1,55 @@
+/*
+ * Copyright (c) 2023 Syntacore
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+
+#include "syntacore/scr7.dtsi"
+
+/ {
+	model = "scr7_l2";
+	compatible = "scr,scr7_l2";
+
+	soc {
+		ddr: memory@0 {
+			compatible = "zephyr,memory-region";
+			reg = <0x0 0x0 0x80000000>;
+			zephyr,memory-region = "DDR";
+		};
+		
+		mmcfg: memory@fffffffff0040000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xffffffff 0xf0040000 0x2000>;
+			zephyr,memory-region = "MMCFG";
+		};
+		
+		mmio: memory@ffffffffff000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xffffffff 0xff000000 0x800000>;
+			zephyr,memory-region = "MMIO";
+		};
+		
+		ocram: memory@ffffffffffff0000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xffffffff 0xffff0000 0x10000>;
+			zephyr,memory-region = "OCRAM";
+		};
+	};
+	
+	L2: l2-cache {
+		compatible = "scr,cache";
+		d-cache-line-size = <64>;
+		d-cache-size = <524288>;
+		i-cache-line-size = <64>;
+		i-cache-size = <524288>;
+	};
+
+	chosen {
+		zephyr,console = &uart;
+		/* Use DDR as SRAM by default */
+		zephyr,sram = &ddr;
+	};
+};
+

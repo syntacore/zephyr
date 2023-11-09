@@ -1,0 +1,23 @@
+# Copyright (c) 2023 Syntacore
+# SPDX-License-Identifier: Apache-2.0
+
+config SCR_IPIC
+	bool
+	select MULTI_LEVEL_INTERRUPTS
+	select 2ND_LEVEL_INTERRUPTS
+	select RISCV_HAS_CUSTOM_IC
+	help
+	  Integrated Programmable Interrupt Controller provides support
+	  for external interrupt lines defined by the Syntacore SCR1 specification.
+
+if SCR_IPIC
+
+config IPIC_STATIC_LINE_MAPPING
+	bool "Static interrupt line mapping mode for IPIC"
+	default y
+
+config EXT_IPIC_IRQ_LN_NUM
+	int "Number of interrupt lines supported by IPIC"
+	default 16
+	
+endif # SCR_IPIC

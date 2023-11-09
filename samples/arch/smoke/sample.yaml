@@ -1,0 +1,8 @@
+sample:
+  description: Syntacore Smoke testing utility
+  name: Smoke tests
+tests:
+  sample.arch.smoke:
+    harness: console
+    tags: smoke_tests
+	filter: CONFIG_UART_CONSOLE and CONFIG_SERIAL_SUPPORT_INTERRUPT

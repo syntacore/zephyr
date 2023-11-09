@@ -1,0 +1,7 @@
+sample:
+  name: Membarrier test
+tests:
+  sample.arch.membarrier:
+    harness: console
+    tags: testing
+  filter: CONFIG_UART_CONSOLE

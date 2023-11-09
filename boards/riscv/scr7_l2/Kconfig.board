@@ -1,0 +1,4 @@
+
+config BOARD_SCR7_L2
+	bool "SCR7 L2 evaluation board"
+	depends on SOC_RISCV64_SCR7_L2

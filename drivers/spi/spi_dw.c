@@ -433,16 +433,16 @@ static int transceive(const struct device *dev,
 	/* Rx Threshold */
 	write_rxftlr(info, reg_data);
 
+	spi_context_cs_control(&spi->ctx, true);
+
+	LOG_DBG("Enabling controller");
+	set_bit_ssienr(info);
+
 	/* Enable interrupts */
 	reg_data = !rx_bufs ?
 		DW_SPI_IMR_UNMASK & DW_SPI_IMR_MASK_RX :
 		DW_SPI_IMR_UNMASK;
 	write_imr(info, reg_data);
-
-	spi_context_cs_control(&spi->ctx, true);
-
-	LOG_DBG("Enabling controller");
-	set_bit_ssienr(info);
 
 	ret = spi_context_wait_for_completion(&spi->ctx);
 out:

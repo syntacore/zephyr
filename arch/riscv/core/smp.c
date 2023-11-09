@@ -9,6 +9,15 @@
 #include <ksched.h>
 #include <zephyr/irq.h>
 #include <zephyr/sys/atomic.h>
+#include <zephyr/cache.h>
+
+/*
+ * FIXME: MSIP register is platform-specific.
+ * Come up with more generic solution
+ */
+#ifndef RISCV_MSIP_BASE
+#define RISCV_MSIP_BASE 0xDEAD
+#endif /* RISCV_MSIP_BASE */
 
 volatile struct {
 	arch_cpustart_t fn;
@@ -17,6 +26,17 @@ volatile struct {
 
 volatile uintptr_t riscv_cpu_wake_flag;
 volatile void *riscv_cpu_sp;
+#ifdef CONFIG_STACK_CANARIES
+extern volatile uintptr_t __stack_chk_guard;
+#endif /* CONFIG_STACK_CANARIES */
+
+#ifdef CONFIG_RISCV_EARLY_INIT_SECONDARY
+uint8_t riscv_cpu_node_list[] = {
+	DT_FOREACH_CHILD_STATUS_OKAY_SEP(DT_PATH(cpus), DT_REG_ADDR, (,))
+};
+uint8_t riscv_cpu_node_list_size =
+	MIN(ARRAY_SIZE(riscv_cpu_node_list), CONFIG_MP_MAX_NUM_CPUS);
+#endif /* CONFIG_RISCV_EARLY_INIT_SECONDARY */
 
 void arch_start_cpu(int cpu_num, k_thread_stack_t *stack, int sz,
 		    arch_cpustart_t fn, void *arg)
@@ -27,9 +47,37 @@ void arch_start_cpu(int cpu_num, k_thread_stack_t *stack, int sz,
 	riscv_cpu_sp = Z_KERNEL_STACK_BUFFER(stack) + sz;
 	riscv_cpu_wake_flag = _kernel.cpus[cpu_num].arch.hartid;
 
+#ifdef CONFIG_CACHE_MANAGEMENT
+	/*
+	 * Flush hartid, wake flag, stack pointer and stack canary value,
+	 * since Secondary core works without caches still
+	 */
+	cache_data_flush_range((void *)&_kernel.cpus[cpu_num].arch.hartid,
+		sizeof(_kernel.cpus[cpu_num].arch.hartid));
+	cache_data_flush_range((void *)&riscv_cpu_sp, sizeof(riscv_cpu_sp));
+#ifdef CONFIG_STACK_CANARIES
+	cache_data_flush_range((void *)&__stack_chk_guard,
+		sizeof(__stack_chk_guard));
+#endif /* CONFIG_STACK_CANARIES */
+#ifdef CONFIG_INIT_STACKS
+	cache_data_flush_range((void *)&z_interrupt_stacks,
+		sizeof(z_interrupt_stacks));
+#endif /* CONFIG_INIT_STACKS */
+	cache_data_flush_range((void *)&riscv_cpu_wake_flag,
+		sizeof(riscv_cpu_wake_flag));
+#endif /* CONFIG_CACHE_MANAGEMENT */
+
 	while (riscv_cpu_wake_flag != 0U) {
-		;
+#ifdef CONFIG_CACHE_MANAGEMENT
+		/* Invalidate wake flag, since Secondary core works without caches still */
+		cache_data_invd_range((void *)&riscv_cpu_wake_flag,
+			sizeof(riscv_cpu_wake_flag));
+#endif /* CONFIG_CACHE_MANAGEMENT */
 	}
+}
+
+void __weak riscv_init_secondary(void)
+{
 }
 
 void z_riscv_secondary_cpu_init(int hartid)
@@ -52,6 +100,7 @@ void z_riscv_secondary_cpu_init(int hartid)
 #if defined(CONFIG_RISCV_SOC_INTERRUPT_INIT)
 	soc_interrupt_init();
 #endif
+	riscv_init_secondary();
 #ifdef CONFIG_RISCV_PMP
 	z_riscv_pmp_init();
 #endif
@@ -69,7 +118,7 @@ static atomic_val_t cpu_pending_ipi[CONFIG_MP_MAX_NUM_CPUS];
 #define IPI_SCHED	0
 #define IPI_FPU_FLUSH	1
 
-void arch_sched_ipi(void)
+void __weak arch_sched_ipi(void)
 {
 	unsigned int key = arch_irq_lock();
 	unsigned int id = _current_cpu->id;
@@ -93,7 +142,7 @@ void z_riscv_flush_fpu_ipi(unsigned int cpu)
 }
 #endif
 
-static void ipi_handler(const void *unused)
+void __weak riscv_ipi_handler(const void *unused)
 {
 	ARG_UNUSED(unused);
 
@@ -143,7 +192,7 @@ void arch_spin_relax(void)
 static int riscv_smp_init(void)
 {
 
-	IRQ_CONNECT(RISCV_MACHINE_SOFT_IRQ, 0, ipi_handler, NULL, 0);
+	IRQ_CONNECT(RISCV_MACHINE_SOFT_IRQ, 0, riscv_ipi_handler, NULL, 0);
 	irq_enable(RISCV_MACHINE_SOFT_IRQ);
 
 	return 0;

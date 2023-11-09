@@ -1,0 +1,13 @@
+identifier: scr7_l2
+name: SCR7 L2
+type: mcu
+# Please comment "simulation: qemu" in order to run twister on real HW
+simulation: qemu
+arch: riscv64
+toolchain:
+  - zephyr
+ram: 4096
+testing:
+  ignore_tags:
+    - net
+    - bluetooth

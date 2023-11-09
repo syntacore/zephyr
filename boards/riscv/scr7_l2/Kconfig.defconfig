@@ -1,0 +1,6 @@
+if BOARD_SCR7_L2
+
+config BOARD
+	default "scr7_l2"
+
+endif

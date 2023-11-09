@@ -1,0 +1,19 @@
+# Kconfig - SCR7 L2 SoC configuration options
+#
+# Copyright (C) Syntacore 2022-2023. All rights reserved.
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+choice
+prompt "SoC implementation based on SCR7"
+depends on SOC_SERIES_RISCV64_SCR7
+
+config SOC_RISCV64_SCR7_L2
+	bool "SoC implementation based on Syntacore SCR7 L2 with PMP"
+
+config SOC_RISCV64_SCR7_L2_MPU
+	bool "SoC implementation based on Syntacore SCR7 L2 with MPU"
+	select SCR_MPU
+
+endchoice

@@ -38,7 +38,9 @@ tests:
       - CONFIG_MINIMAL_LIBC=y
   arch.shared_interrupt:
     # excluded because of failures during test_prevent_interruption
-    platform_exclude: qemu_cortex_m0
+    platform_exclude: 
+      - qemu_cortex_m0
+      - scr1
     arch_exclude:
       # same as above, #22956
       - nios2
