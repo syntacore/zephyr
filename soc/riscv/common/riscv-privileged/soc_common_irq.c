@@ -14,6 +14,9 @@
 
 #include <zephyr/drivers/interrupt_controller/riscv_clic.h>
 #include <zephyr/drivers/interrupt_controller/riscv_plic.h>
+#include <zephyr/drivers/interrupt_controller/riscv_ipic.h>
+
+#include <zephyr/devicetree.h>
 
 #if defined(CONFIG_RISCV_HAS_CLIC)
 
@@ -37,20 +40,27 @@ void z_riscv_irq_priority_set(unsigned int irq, unsigned int prio, uint32_t flag
 	riscv_clic_irq_priority_set(irq, prio, flags);
 }
 
-#else /* PLIC + HLINT/CLINT or HLINT/CLINT only */
+#else /* PLIC + HLINT/CLINT or HLINT/CLINT or custom interrupt controller */
 
 void arch_irq_enable(unsigned int irq)
 {
 	uint32_t mie;
 
-#if defined(CONFIG_RISCV_HAS_PLIC)
+#if defined(CONFIG_2ND_LEVEL_INTERRUPTS)
+#if defined(CONFIG_RISCV_HAS_PLIC) || defined(CONFIG_RISCV_HAS_CUSTOM_IC)
 	unsigned int level = irq_get_level(irq);
 
 	if (level == 2) {
+#if defined(CONFIG_RISCV_HAS_PLIC)
 		riscv_plic_irq_enable(irq);
+#else
+		irq = irq_from_level_2(irq);
+		riscv_custom_ic_irq_enable(irq);
+#endif /* CONFIG_RISCV_HAS_PLIC */
 		return;
 	}
-#endif
+#endif /* CONFIG_RISCV_HAS_PLIC || CONFIG_RISCV_HAS_CUSTOM_IC */
+#endif /* CONFIG_2ND_LEVEL_INTERRUPTS */
 
 	/*
 	 * CSR mie register is updated using atomic instruction csrrs
@@ -63,14 +73,21 @@ void arch_irq_disable(unsigned int irq)
 {
 	uint32_t mie;
 
-#if defined(CONFIG_RISCV_HAS_PLIC)
+#if defined(CONFIG_2ND_LEVEL_INTERRUPTS)
+#if defined(CONFIG_RISCV_HAS_PLIC) || defined(CONFIG_RISCV_HAS_CUSTOM_IC)
 	unsigned int level = irq_get_level(irq);
 
 	if (level == 2) {
+#if defined(CONFIG_RISCV_HAS_PLIC)
 		riscv_plic_irq_disable(irq);
+#else
+		irq = irq_from_level_2(irq);
+		riscv_custom_ic_irq_disable(irq);
+#endif /* CONFIG_RISCV_HAS_PLIC */
 		return;
 	}
-#endif
+#endif /* CONFIG_RISCV_HAS_PLIC || CONFIG_RISCV_HAS_CUSTOM_IC */
+#endif /* CONFIG_2ND_LEVEL_INTERRUPTS */
 
 	/*
 	 * Use atomic instruction csrrc to disable device interrupt in mie CSR.
@@ -83,13 +100,20 @@ int arch_irq_is_enabled(unsigned int irq)
 {
 	uint32_t mie;
 
-#if defined(CONFIG_RISCV_HAS_PLIC)
+#if defined(CONFIG_2ND_LEVEL_INTERRUPTS)
+#if defined(CONFIG_RISCV_HAS_PLIC) || defined(CONFIG_RISCV_HAS_CUSTOM_IC)
 	unsigned int level = irq_get_level(irq);
 
 	if (level == 2) {
+#if defined(CONFIG_RISCV_HAS_PLIC)
 		return riscv_plic_irq_is_enabled(irq);
+#else
+		irq = irq_from_level_2(irq);
+		return riscv_custom_ic_irq_is_enabled(irq);
+#endif /* CONFIG_RISCV_HAS_PLIC */
 	}
-#endif
+#endif /* CONFIG_RISCV_HAS_PLIC || CONFIG_RISCV_HAS_CUSTOM_IC */
+#endif /* CONFIG_2ND_LEVEL_INTERRUPTS */
 
 	mie = csr_read(mie);
 

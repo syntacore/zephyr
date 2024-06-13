@@ -704,7 +704,8 @@ static int uart_ns16550_configure(const struct device *dev,
 	}
 
 	/* clear the port */
-	ns16550_inbyte(dev_cfg, RDR(dev));
+	if ((ns16550_inbyte(dev_cfg, LSR(dev)) & LSR_RXRDY) != 0)
+		ns16550_inbyte(dev_cfg, RDR(dev));
 
 	/* disable interrupts  */
 	ns16550_outbyte(dev_cfg, IER(dev), 0x00);

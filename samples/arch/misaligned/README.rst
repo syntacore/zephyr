@@ -1,0 +1,198 @@
+# Copyright (C) 2023, Syntacore Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+.. _misaligned:
+
+Misaligned Test
+###########
+
+Overview
+********
+
+Test to check misaligned LD/ST access handling
+
+Sample Output
+=============
+*** Booting Zephyr OS build zephyr-v3.4.0-112-g11794645d545 ***
+Misaligned access test for htg960_l3_cluster
+Reading 0 [400005340]:706050403020100
+Reading 1 [400005341]:807060504030201
+Reading 2 [400005342]:908070605040302
+Reading 3 [400005343]:a09080706050403
+Reading 4 [400005344]:b0a090807060504
+Reading 5 [400005345]:c0b0a0908070605
+Reading 6 [400005346]:d0c0b0a09080706
+Reading 7 [400005347]:e0d0c0b0a090807
+Reading 8 [400005348]:f0e0d0c0b0a0908
+Reading 9 [400005349]:100f0e0d0c0b0a09
+Reading a [40000534a]:11100f0e0d0c0b0a
+Reading b [40000534b]:1211100f0e0d0c0b
+Reading c [40000534c]:131211100f0e0d0c
+Reading d [40000534d]:14131211100f0e0d
+Reading e [40000534e]:1514131211100f0e
+Reading f [40000534f]:161514131211100f
+Reading 10 [400005350]:1716151413121110
+Reading 11 [400005351]:1817161514131211
+Reading 12 [400005352]:1918171615141312
+Reading 13 [400005353]:1a19181716151413
+Reading 14 [400005354]:1b1a191817161514
+Reading 15 [400005355]:1c1b1a1918171615
+Reading 16 [400005356]:1d1c1b1a19181716
+Reading 17 [400005357]:1e1d1c1b1a191817
+Reading 18 [400005358]:1f1e1d1c1b1a1918
+Reading 19 [400005359]:201f1e1d1c1b1a19
+Reading 1a [40000535a]:21201f1e1d1c1b1a
+Reading 1b [40000535b]:2221201f1e1d1c1b
+Reading 1c [40000535c]:232221201f1e1d1c
+Reading 1d [40000535d]:24232221201f1e1d
+Reading 1e [40000535e]:2524232221201f1e
+Reading 1f [40000535f]:262524232221201f
+Reading 20 [400005360]:2726252423222120
+Reading 21 [400005361]:2827262524232221
+Reading 22 [400005362]:2928272625242322
+Reading 23 [400005363]:2a29282726252423
+Reading 24 [400005364]:2b2a292827262524
+Reading 25 [400005365]:2c2b2a2928272625
+Reading 26 [400005366]:2d2c2b2a29282726
+Reading 27 [400005367]:2e2d2c2b2a292827
+Reading 28 [400005368]:2f2e2d2c2b2a2928
+Reading 29 [400005369]:302f2e2d2c2b2a29
+Reading 2a [40000536a]:31302f2e2d2c2b2a
+Reading 2b [40000536b]:3231302f2e2d2c2b
+Reading 2c [40000536c]:333231302f2e2d2c
+Reading 2d [40000536d]:34333231302f2e2d
+Reading 2e [40000536e]:3534333231302f2e
+Reading 2f [40000536f]:363534333231302f
+Reading 30 [400005370]:3736353433323130
+Reading 31 [400005371]:3837363534333231
+Reading 32 [400005372]:3938373635343332
+Reading 33 [400005373]:3a39383736353433
+Reading 34 [400005374]:3b3a393837363534
+Reading 35 [400005375]:3c3b3a3938373635
+Reading 36 [400005376]:3d3c3b3a39383736
+Reading 37 [400005377]:3e3d3c3b3a393837
+Reading 38 [400005378]:3f3e3d3c3b3a3938
+Write/Reading 0 [400005340]:1
+Write/Reading 1 [400005341]:2
+Write/Reading 2 [400005342]:3
+Write/Reading 3 [400005343]:4
+Write/Reading 4 [400005344]:5
+Write/Reading 5 [400005345]:6
+Write/Reading 6 [400005346]:7
+Write/Reading 7 [400005347]:8
+Write/Reading 8 [400005348]:9
+Write/Reading 9 [400005349]:a
+Write/Reading a [40000534a]:b
+Write/Reading b [40000534b]:c
+Write/Reading c [40000534c]:d
+Write/Reading d [40000534d]:e
+Write/Reading e [40000534e]:f
+Write/Reading f [40000534f]:10
+Write/Reading 10 [400005350]:11
+Write/Reading 11 [400005351]:12
+Write/Reading 12 [400005352]:13
+Write/Reading 13 [400005353]:14
+Write/Reading 14 [400005354]:15
+Write/Reading 15 [400005355]:16
+Write/Reading 16 [400005356]:17
+Write/Reading 17 [400005357]:18
+Write/Reading 18 [400005358]:19
+Write/Reading 19 [400005359]:1a
+Write/Reading 1a [40000535a]:1b
+Write/Reading 1b [40000535b]:1c
+Write/Reading 1c [40000535c]:1d
+Write/Reading 1d [40000535d]:1e
+Write/Reading 1e [40000535e]:1f
+Write/Reading 1f [40000535f]:20
+Write/Reading 20 [400005360]:21
+Write/Reading 21 [400005361]:22
+Write/Reading 22 [400005362]:23
+Write/Reading 23 [400005363]:24
+Write/Reading 24 [400005364]:25
+Write/Reading 25 [400005365]:26
+Write/Reading 26 [400005366]:27
+Write/Reading 27 [400005367]:28
+Write/Reading 28 [400005368]:29
+Write/Reading 29 [400005369]:2a
+Write/Reading 2a [40000536a]:2b
+Write/Reading 2b [40000536b]:2c
+Write/Reading 2c [40000536c]:2d
+Write/Reading 2d [40000536d]:2e
+Write/Reading 2e [40000536e]:2f
+Write/Reading 2f [40000536f]:30
+Write/Reading 30 [400005370]:31
+Write/Reading 31 [400005371]:32
+Write/Reading 32 [400005372]:33
+Write/Reading 33 [400005373]:34
+Write/Reading 34 [400005374]:35
+Write/Reading 35 [400005375]:36
+Write/Reading 36 [400005376]:37
+Write/Reading 37 [400005377]:38
+Write/Reading 38 [400005378]:39
+Reading 0 [400005340]:807060504030201
+Reading 1 [400005341]:908070605040302
+Reading 2 [400005342]:a09080706050403
+Reading 3 [400005343]:b0a090807060504
+Reading 4 [400005344]:c0b0a0908070605
+Reading 5 [400005345]:d0c0b0a09080706
+Reading 6 [400005346]:e0d0c0b0a090807
+Reading 7 [400005347]:f0e0d0c0b0a0908
+Reading 8 [400005348]:100f0e0d0c0b0a09
+Reading 9 [400005349]:11100f0e0d0c0b0a
+Reading a [40000534a]:1211100f0e0d0c0b
+Reading b [40000534b]:131211100f0e0d0c
+Reading c [40000534c]:14131211100f0e0d
+Reading d [40000534d]:1514131211100f0e
+Reading e [40000534e]:161514131211100f
+Reading f [40000534f]:1716151413121110
+Reading 10 [400005350]:1817161514131211
+Reading 11 [400005351]:1918171615141312
+Reading 12 [400005352]:1a19181716151413
+Reading 13 [400005353]:1b1a191817161514
+Reading 14 [400005354]:1c1b1a1918171615
+Reading 15 [400005355]:1d1c1b1a19181716
+Reading 16 [400005356]:1e1d1c1b1a191817
+Reading 17 [400005357]:1f1e1d1c1b1a1918
+Reading 18 [400005358]:201f1e1d1c1b1a19
+Reading 19 [400005359]:21201f1e1d1c1b1a
+Reading 1a [40000535a]:2221201f1e1d1c1b
+Reading 1b [40000535b]:232221201f1e1d1c
+Reading 1c [40000535c]:24232221201f1e1d
+Reading 1d [40000535d]:2524232221201f1e
+Reading 1e [40000535e]:262524232221201f
+Reading 1f [40000535f]:2726252423222120
+Reading 20 [400005360]:2827262524232221
+Reading 21 [400005361]:2928272625242322
+Reading 22 [400005362]:2a29282726252423
+Reading 23 [400005363]:2b2a292827262524
+Reading 24 [400005364]:2c2b2a2928272625
+Reading 25 [400005365]:2d2c2b2a29282726
+Reading 26 [400005366]:2e2d2c2b2a292827
+Reading 27 [400005367]:2f2e2d2c2b2a2928
+Reading 28 [400005368]:302f2e2d2c2b2a29
+Reading 29 [400005369]:31302f2e2d2c2b2a
+Reading 2a [40000536a]:3231302f2e2d2c2b
+Reading 2b [40000536b]:333231302f2e2d2c
+Reading 2c [40000536c]:34333231302f2e2d
+Reading 2d [40000536d]:3534333231302f2e
+Reading 2e [40000536e]:363534333231302f
+Reading 2f [40000536f]:3736353433323130
+Reading 30 [400005370]:3837363534333231
+Reading 31 [400005371]:3938373635343332
+Reading 32 [400005372]:39383736353433
+Reading 33 [400005373]:393837363534
+Reading 34 [400005374]:3938373635
+Reading 35 [400005375]:39383736
+Reading 36 [400005376]:393837
+Reading 37 [400005377]:3938
+Reading 38 [400005378]:39
+Misaligned access test completed

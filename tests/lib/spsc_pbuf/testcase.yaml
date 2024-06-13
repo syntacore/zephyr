@@ -11,6 +11,7 @@ tests:
       - native_sim
     # Exclude platform which does not link with cache functions
     platform_exclude: ast1030_evb
+    filter: not CONFIG_SPSC_PBUF_NO_CACHE
     timeout: 120
     extra_configs:
       - CONFIG_SPSC_PBUF_CACHE_ALWAYS=y

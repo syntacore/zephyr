@@ -1237,6 +1237,7 @@ config KERNEL_COHERENCE
 config TICKET_SPINLOCKS
 	bool "Ticket spinlocks for lock acquisition fairness [EXPERIMENTAL]"
 	select EXPERIMENTAL
+	default y
 	help
 	  Basic spinlock implementation is based on single
 	  atomic variable and doesn't guarantee locking fairness
