@@ -172,6 +172,13 @@ static inline void trigger_irq(int irq)
 {
 	riscv_clic_irq_set_pending(irq);
 }
+#elif defined(CONFIG_SOC_FAMILY_SCR1)
+#define NO_TRIGGER_FROM_SW
+
+static inline void trigger_irq(int irq)
+{
+	ARG_UNUSED(irq);
+}
 #else
 static inline void trigger_irq(int irq)
 {

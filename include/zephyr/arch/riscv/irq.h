@@ -28,8 +28,14 @@ extern "C" {
 
 /* Exceptions 0-15 (MCAUSE interrupt=0) */
 
+/* Machine Load address misaligned exception */
+#define RISCV_EXC_LD_MISALIGNED    4
+/* Machine Store/AMO address misaligned exception */
+#define RISCV_EXC_ST_MISALIGNED    6
 /* Environment Call from U-mode */
 #define RISCV_EXC_ECALLU 8
+/* Environment Call from S-mode */
+#define RISCV_EXC_ECALLS 9
 /** Environment Call from M-mode */
 #define RISCV_EXC_ECALLM 11
 
@@ -127,6 +133,41 @@ static inline void arch_isr_direct_footer(int swap)
 		ISR_DIRECT_FOOTER(0); \
 	} \
 	static inline int name##_body(void)
+
+/* RISC-V custom interrupt controller API, see CONFIG_RISCV_HAS_CUSTOM_IC */
+
+/**
+ * @brief Enable an interrupt line for RISC-V custom interrupt controller.
+ *
+ * This routine enables an interrupt line for RISC-V custom interrupt controller.
+ * Should be implemented by custom interrupt controller for 2nd level IRQs.
+ *
+ * @param irq 2nd level IRQ number to enable
+ */
+void riscv_custom_ic_irq_enable(uint32_t irq);
+
+/**
+ * @brief Disable an interrupt line for RISC-V custom interrupt controller.
+ *
+ * This routine disables an interrupt line for RISC-V custom interrupt controller.
+ * Should be implemented by custom interrupt controller for 2nd level IRQs.
+ *
+ * @param irq 2nd level IRQ number to disable
+ */
+void riscv_custom_ic_irq_disable(uint32_t irq);
+
+/**
+ * @brief Check if an interrupt line for RISC-V custom interrupt controller is enabled
+ *
+ * This routine checks if an interrupt line for RISC-V custom interrupt
+ * controller is enabled.
+ * Should be implemented by custom interrupt controller for 2nd level IRQs.
+ *
+ * @param irq 2nd level IRQ number to check
+ *
+ * @return 1 - if 2nd level IRQ is enabled; 0 - otherwise
+ */
+int riscv_custom_ic_irq_is_enabled(uint32_t irq);
 
 #endif /* _ASMLANGUAGE */
 

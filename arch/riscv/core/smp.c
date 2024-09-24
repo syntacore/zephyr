@@ -12,17 +12,28 @@
 #include <zephyr/sys/atomic.h>
 #include <zephyr/arch/riscv/irq.h>
 #include <zephyr/drivers/pm_cpu_ops.h>
+#include <zephyr/cache.h>
 
 volatile struct {
 	arch_cpustart_t fn;
 	void *arg;
 } riscv_cpu_init[CONFIG_MP_MAX_NUM_CPUS];
 
-volatile uintptr_t __noinit riscv_cpu_wake_flag;
-volatile uintptr_t riscv_cpu_boot_flag;
+volatile uintptr_t riscv_cpu_wake_flag __aligned(CONFIG_RISCV_MIN_STACK_OBJ_ALIGN_AND_SIZE) = -1;
+volatile uintptr_t riscv_cpu_boot_flag __aligned(CONFIG_RISCV_MIN_STACK_OBJ_ALIGN_AND_SIZE) = -1;
 volatile void *riscv_cpu_sp;
+#ifdef CONFIG_STACK_CANARIES
+extern volatile uintptr_t __stack_chk_guard;
+#endif /* CONFIG_STACK_CANARIES */
 
 extern void __start(void);
+#ifdef CONFIG_RISCV_EARLY_INIT_SECONDARY
+uint8_t riscv_cpu_node_list[] = {
+	DT_FOREACH_CHILD_STATUS_OKAY_SEP(DT_PATH(cpus), DT_REG_ADDR, (,))
+};
+uint8_t riscv_cpu_node_list_size =
+	MIN(ARRAY_SIZE(riscv_cpu_node_list), CONFIG_MP_MAX_NUM_CPUS);
+#endif /* CONFIG_RISCV_EARLY_INIT_SECONDARY */
 
 #if defined(CONFIG_RISCV_SOC_INTERRUPT_INIT)
 void soc_interrupt_init(void);
@@ -43,10 +54,39 @@ void arch_cpu_start(int cpu_num, k_thread_stack_t *stack, int sz,
 		return;
 	}
 #endif
+#ifdef CONFIG_CACHE_MANAGEMENT
+	/*
+	 * Flush hartid, boot flag, stack pointer and stack canary value,
+	 * since Secondary core works without caches still
+	 */
+	cache_data_flush_range((void *)&_kernel.cpus[cpu_num].arch.hartid,
+		sizeof(_kernel.cpus[cpu_num].arch.hartid));
+	cache_data_flush_range((void *)&riscv_cpu_sp, sizeof(riscv_cpu_sp));
+	cache_data_flush_range((void *)&riscv_cpu_boot_flag,
+		sizeof(riscv_cpu_boot_flag));
+#ifdef CONFIG_STACK_CANARIES
+	cache_data_flush_range((void *)&__stack_chk_guard,
+		sizeof(__stack_chk_guard));
+#endif /* CONFIG_STACK_CANARIES */
+#ifdef CONFIG_INIT_STACKS
+	cache_data_flush_range((void *)&z_interrupt_stacks,
+		sizeof(z_interrupt_stacks));
+#endif /* CONFIG_INIT_STACKS */
+#endif /* CONFIG_CACHE_MANAGEMENT */
 
 	while (riscv_cpu_boot_flag == 0U) {
 		riscv_cpu_wake_flag = _kernel.cpus[cpu_num].arch.hartid;
+#ifdef CONFIG_CACHE_MANAGEMENT
+		cache_data_flush_range((void *)&riscv_cpu_wake_flag,
+			sizeof(riscv_cpu_wake_flag));
+		cache_data_invd_range((void *)&riscv_cpu_boot_flag,
+			sizeof(riscv_cpu_boot_flag));
+#endif /* CONFIG_CACHE_MANAGEMENT */
 	}
+}
+
+void __weak riscv_init_secondary(void)
+{
 }
 
 void arch_secondary_cpu_init(int hartid)
@@ -69,6 +109,7 @@ void arch_secondary_cpu_init(int hartid)
 #if defined(CONFIG_RISCV_SOC_INTERRUPT_INIT)
 	soc_interrupt_init();
 #endif
+	riscv_init_secondary();
 #ifdef CONFIG_RISCV_PMP
 	z_riscv_pmp_init();
 #endif
@@ -80,6 +121,10 @@ void arch_secondary_cpu_init(int hartid)
 
 #ifdef CONFIG_SMP
 
+/*
+ * FIXME: MSIP register is platform-specific.
+ * Come up with more generic solution
+ */
 #define MSIP_BASE 0x2000000UL
 #define MSIP(hartid) ((volatile uint32_t *)MSIP_BASE)[hartid]
 
@@ -87,7 +132,7 @@ static atomic_val_t cpu_pending_ipi[CONFIG_MP_MAX_NUM_CPUS];
 #define IPI_SCHED	0
 #define IPI_FPU_FLUSH	1
 
-void arch_sched_directed_ipi(uint32_t cpu_bitmap)
+void __weak arch_sched_directed_ipi(uint32_t cpu_bitmap)
 {
 	unsigned int key = arch_irq_lock();
 	unsigned int id = _current_cpu->id;
@@ -117,7 +162,7 @@ void arch_flush_fpu_ipi(unsigned int cpu)
 }
 #endif
 
-static void sched_ipi_handler(const void *unused)
+void __weak sched_ipi_handler(const void *unused)
 {
 	ARG_UNUSED(unused);
 
@@ -166,7 +211,6 @@ void arch_spin_relax(void)
 
 int arch_smp_init(void)
 {
-
 	IRQ_CONNECT(RISCV_IRQ_MSOFT, 0, sched_ipi_handler, NULL, 0);
 	irq_enable(RISCV_IRQ_MSOFT);
 

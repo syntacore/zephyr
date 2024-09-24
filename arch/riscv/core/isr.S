@@ -88,6 +88,11 @@ GTEXT(z_get_next_switch_handle)
 GTEXT(z_riscv_switch)
 GTEXT(z_riscv_thread_start)
 
+#ifdef CONFIG_RISCV_MISALIGNED_ACCESS_SUPPORT
+GTEXT(riscv_misaligned_store_process)
+GTEXT(riscv_misaligned_load_process)
+#endif /* CONFIG_RISCV_MISALIGNED_ACCESS_SUPPORT */
+
 #ifdef CONFIG_TRACING
 GTEXT(sys_trace_isr_enter)
 GTEXT(sys_trace_isr_exit)
@@ -103,6 +108,26 @@ GTEXT(__soc_handle_all_irqs)
 
 /* exports */
 GTEXT(_isr_wrapper)
+GTEXT(z_riscv_run_in_s_mode)
+
+SECTION_FUNC(TEXT, z_riscv_run_in_s_mode)
+	/* Configure function to run */
+	csrw mepc, a0
+	/* Save caller-saved registers on current thread stack. */
+	addi sp, sp, -__struct_arch_esf_SIZEOF
+	DO_CALLER_SAVED(sr)		;
+	/* Make us return to leave_s_mode */
+	la ra, leave_s_mode
+	/* Enter S-Mode */
+	mret
+
+leave_s_mode:
+	/* Restore caller-saved registers from thread stack */
+	DO_CALLER_SAVED(lr)
+	/* remove esf from the stack */
+	addi sp, sp, __struct_arch_esf_SIZEOF
+	/* Return to M-Mode */
+	ecall
 
 /* use ABI name of registers for the sake of simplicity */
 
@@ -340,6 +365,23 @@ no_fp:	/* increment _current->arch.exception_depth */
 	li t1, RISCV_EXC_ECALLM
 	beq t0, t1, is_kernel_syscall
 
+	/*
+	 * If mcause == RISCV_EXC_ECALLS, just restore the
+	 * context and proceed in M-mode
+	 */
+	li t1, RISCV_EXC_ECALLS
+	beq t0, t1, recover_in_m_mode
+
+#ifdef CONFIG_RISCV_MISALIGNED_ACCESS_SUPPORT
+	/* Handle Load address misaligned exception */
+	li t1, RISCV_EXC_LD_MISALIGNED
+	beq t0, t1, handle_ld_misaligned
+
+	/* Handle Store/AMO address misaligned exception */
+	li t1, RISCV_EXC_ST_MISALIGNED
+	beq t0, t1, handle_st_misaligned
+#endif /* CONFIG_RISCV_MISALIGNED_ACCESS_SUPPORT */
+
 #ifdef CONFIG_USERSPACE
 	/*
 	 * If mcause == RISCV_EXC_ECALLU, handle system call
@@ -349,6 +391,7 @@ no_fp:	/* increment _current->arch.exception_depth */
 	beq t0, t1, is_user_syscall
 #endif /* CONFIG_USERSPACE */
 
+fault:
 	/*
 	 * Call _Fault to handle exception.
 	 * Stack pointer is pointing to a struct_arch_esf structure, pass it
@@ -700,8 +743,10 @@ fp_trap_exit:
 
 	/* Restore MEPC and MSTATUS registers */
 	lr t0, __struct_arch_esf_mepc_OFFSET(sp)
-	lr t2, __struct_arch_esf_mstatus_OFFSET(sp)
 	csrw mepc, t0
+
+misaligned_trap_exit:
+	lr t2, __struct_arch_esf_mstatus_OFFSET(sp)
 	csrw mstatus, t2
 
 #ifdef CONFIG_USERSPACE
@@ -759,5 +804,82 @@ fp_trap_exit:
 #endif
 
 #endif /* CONFIG_RISCV_SOC_HAS_ISR_STACKING */
+	mret
 
+#ifdef CONFIG_RISCV_MISALIGNED_ACCESS_SUPPORT
+handle_st_misaligned:
+	mv a0, sp
+	call riscv_misaligned_store_process
+	j 1f
+
+handle_ld_misaligned:
+	mv a0, sp
+	call riscv_misaligned_load_process
+
+1:
+	/* Misaligned access wasn't handled - panic */
+	bnez a0, fault
+	/* Misaligned access successfully handled - recover context */
+#ifdef CONFIG_RISCV_SOC_CONTEXT_SAVE
+	/* Restore context at SOC level */
+	addi a0, sp, __struct_arch_esf_soc_context_OFFSET
+	jal ra, __soc_restore_context
+#endif /* CONFIG_RISCV_SOC_CONTEXT_SAVE */
+#ifdef CONFIG_FPU_SHARING
+	/* FPU handling upon exception mode exit */
+	mv a0, sp
+	call z_riscv_fpu_exit_exc
+
+	/* decrement _current->arch.exception_depth */
+	lr t0, ___cpu_t_current_OFFSET(s0)
+	lb t1, _thread_offset_to_exception_depth(t0)
+	add t1, t1, -1
+	sb t1, _thread_offset_to_exception_depth(t0)
+#endif /* CONFIG_FPU_SHARING */
+
+	j misaligned_trap_exit
+#endif /* CONFIG_RISCV_MISALIGNED_ACCESS_SUPPORT */
+
+recover_in_m_mode:
+#if defined(CONFIG_FPU_SHARING)
+	/* FPU handling upon exception mode exit */
+	mv a0, sp
+	call z_riscv_fpu_exit_exc
+
+	/* decrement _current->arch.exception_depth */
+	lr t0, ___cpu_t_current_OFFSET(s0)
+	lb t1, _thread_offset_to_exception_depth(t0)
+	add t1, t1, -1
+	sb t1, _thread_offset_to_exception_depth(t0)
+#endif
+
+	/* Restore MSTATUS and patch MPP to remain in M-mode */
+	li t0, MSTATUS_MPP
+	not t0, t0
+	lr t1, __struct_arch_esf_mstatus_OFFSET(sp)
+	and t1, t0, t1
+	li t0, MSTATUS_MPP_M
+	or t1, t0, t1
+	csrw mstatus, t1
+
+	/* Restore s0 (it is no longer ours) */
+	lr s0, __struct_arch_esf_s0_OFFSET(sp)
+
+	/* Recover in M-mode */
+#ifdef CONFIG_RISCV_SOC_HAS_ISR_STACKING
+	SOC_ISR_SW_UNSTACKING
+#else
+	/* Restore caller-saved registers from thread stack */
+	DO_CALLER_SAVED(lr)
+
+	/* remove esf from the stack */
+	addi sp, sp, __struct_arch_esf_SIZEOF
+
+#endif /* CONFIG_RISCV_SOC_HAS_ISR_STACKING */
+
+	/*
+	 * Configure PC from which to continue in M-mode
+	 * after mret
+	 */
+	csrw mepc, ra
 	mret

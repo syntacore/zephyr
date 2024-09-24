@@ -1,0 +1,55 @@
+# Copyright (C) 2022, Syntacore Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Kconfig - SCR7 L2 SoC configuration options
+
+config SOC_FAMILY_SCR7
+	bool
+	select RISCV
+	select RISCV_GP
+	select RISCV_ISA_RV64I
+	select RISCV_ISA_EXT_M
+	select RISCV_ISA_EXT_A
+	select RISCV_ISA_EXT_C
+	select RISCV_ISA_EXT_F
+	select RISCV_ISA_EXT_D
+	select RISCV_ISA_EXT_ZICSR
+	select RISCV_ISA_EXT_ZIFENCEI
+	select 64BIT
+	select RISCV_PRIVILEGED
+	select CPU_HAS_FPU_DOUBLE_PRECISION
+	select CPU_HAS_DCACHE
+	select CPU_HAS_ICACHE
+	select SCR_L1_CACHE
+	select SCR_L2_CACHE
+	select RISCV_HAS_PLIC
+	select RISCV_EARLY_INIT_SECONDARY if (MP_MAX_NUM_CPUS > 1)
+
+config SOC_FAMILY
+	default "SCR7" if SOC_FAMILY_SCR7
+
+config SOC_SERIES_SCR7
+	bool
+	select SOC_FAMILY_SCR7
+
+config SOC_SERIES
+	default "SCR7" if SOC_SERIES_SCR7
+
+config SOC_SCR7_L2
+	bool
+	select SOC_SERIES_SCR7
+	
+config SOC
+	default "SCR7 L2" if SOC_SCR7_L2
+	
+rsource "../Kconfig"
+	

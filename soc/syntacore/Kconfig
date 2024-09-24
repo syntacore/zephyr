@@ -1,0 +1,74 @@
+# Copyright (C) 2024, Syntacore Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+if SOC_FAMILY_SCR1 || SOC_FAMILY_SCR7 || SOC_FAMILY_SCR9
+
+config SCR_SYSTEM_HALT
+	bool "Syntacore custom system halt handler"
+	help
+		This option enables Syntacore custom system halt handler
+
+config SCR_SYSTEM_HALT_REASON_OFFSET
+	int "Syntacore system halt reason offset"
+	depends on SCR_SYSTEM_HALT
+	default 0
+	help
+		This option configures an offset which is applied to
+		any halt reason number passed by Zephyr to arch_system_halt.
+		This may be useful to shift Zephyr's halt numbers range
+
+config SCR_L1_CACHE
+	bool
+	help
+		This option enables Syntacore L1 cache
+
+config SCR_L2_CACHE
+	bool
+	help
+		This option enables Syntacore L2 cache
+
+config SCR_L3_CACHE
+	bool
+	help
+		This option enables Syntacore L3 cache
+
+config SCR_L1D_PREFETCHER
+	bool "Syntacore L1D prefetcher"
+	depends on SCR_L1_CACHE
+	help
+		This option signals Syntacore L1D prefetcher presence
+		
+config SCR_L1D_PREFETCHER_ENABLED
+	bool "Enable Syntacore L1D prefetcher"
+	depends on SCR_L1D_PREFETCHER
+	default y
+	help
+		This option enables or disables Syntacore L1D prefetcher
+
+config SCR_MMU
+	bool "Syntacore MMU"
+	help
+		This option enables Syntacore Memory Management Unit
+		
+config SCR_MRT
+	bool
+	help
+		This option enables Syntacore Memory Routing Table
+		
+config SCR_PMP_ADDR_SANITIZER
+	bool "PMP memory check"
+	depends on RISCV_PMP
+	help
+		This option enables address sanitizer which triggers 
+		exception on unused memory access or on writing RO data
+
+endif # SOC_FAMILY_SCR1 || SOC_FAMILY_SCR7 || SOC_FAMILY_SCR9

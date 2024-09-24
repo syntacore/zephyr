@@ -1,0 +1,66 @@
+/*
+ * Copyright (C) 2024, Syntacore Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/dts-v1/;
+
+#include "syntacore/scr7.dtsi"
+
+/ {
+	model = "scr7_l2";
+	compatible = "syntacore,scr7_l2";
+
+	soc {
+		ddr: memory@0 {
+			compatible = "zephyr,memory-region";
+			reg = <0x0 0x0 0x80000000>;
+			zephyr,memory-region = "DDR";
+		};
+		
+		mmcfg: memory@fffffffff0040000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xffffffff 0xf0040000 0x2000>;
+			zephyr,memory-region = "MMCFG";
+		};
+		
+		mmio: memory@ffffffffff000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xffffffff 0xff000000 0x800000>;
+			zephyr,memory-region = "MMIO";
+		};
+		
+		ocram: memory@ffffffffffff0000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xffffffff 0xffff0000 0x10000>;
+			zephyr,memory-region = "OCRAM";
+		};
+	};
+	
+	L2: l2-cache {
+		compatible = "syntacore,cache";
+		d-cache-line-size = <64>;
+		d-cache-size = <524288>;
+		i-cache-line-size = <64>;
+		i-cache-size = <524288>;
+	};
+
+	chosen {
+		zephyr,console = &uart;
+		/* Use DDR as SRAM by default */
+		zephyr,sram = &ddr;
+	};
+};
+
+&uart {
+	clock-frequency = <50000000>;
+};

@@ -1,0 +1,24 @@
+description: Cache properties for Syntacore platforms
+
+compatible: "syntacore,cache"
+
+properties:
+  d-cache-line-size:
+    type: int
+    required: true
+    description: Data Cache line size
+
+  d-cache-size:
+    type: int
+    required: true
+    description: Data Cache size
+
+  i-cache-line-size:
+    type: int
+    required: true
+    description: Instruction Cache line size
+
+  i-cache-size:
+    type: int
+    required: true
+    description: Instruction Cache size
