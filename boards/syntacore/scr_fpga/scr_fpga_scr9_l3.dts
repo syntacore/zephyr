@@ -1,0 +1,70 @@
+/*
+ * Copyright (C) 2024, Syntacore Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/dts-v1/;
+
+#include "syntacore/scr9_l3.dtsi"
+
+/ {
+	model = "scr9_l3";
+	compatible = "syntacore,scr9_l3";
+
+	soc {
+		ddr: memory@400000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0x4 0x0 0x8000000>;
+			zephyr,memory-region = "DDR";
+		};
+		
+		ddr2: memory@408000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0x4 0x8000000 0x8000000>;
+			zephyr,memory-region = "DDR2";
+		};
+		
+		mmcfg: memory@e8001000 {
+			compatible = "zephyr,memory-region";
+			reg = <0x0 0xe8001000 0x1000>;
+			zephyr,memory-region = "MMCFG";
+		};
+		
+		mmio: memory@1e000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0x0 0x1e000000 0x1000000>;
+			zephyr,memory-region = "MMIO";
+		};
+		
+		clcfg: memory@4000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0x0 0x4000000 0x8000>;
+			zephyr,memory-region = "CLCFG";
+		};
+		
+		ocram: memory@2000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0x0 0x2000000 0x80000>;
+			zephyr,memory-region = "OCRAM";
+		};
+	};
+
+	chosen {
+		zephyr,console = &uart;
+		/* Use DDR as SRAM by default */
+		zephyr,sram = &ddr;
+	};
+};
+
+&uart {
+	clock-frequency = <80000000>;
+};

@@ -62,9 +62,9 @@
 #define MTIMECMP_REG	DT_INST_REG_ADDR(0)
 #define MTIME_REG	(DT_INST_REG_ADDR(0) + 8)
 #define TIMER_IRQN	DT_INST_IRQN(0)
-/* scr,machine-timer*/
-#elif DT_HAS_COMPAT_STATUS_OKAY(scr_machine_timer)
-#define DT_DRV_COMPAT scr_machine_timer
+/* syntacore,machine-timer*/
+#elif DT_HAS_COMPAT_STATUS_OKAY(syntacore_machine_timer)
+#define DT_DRV_COMPAT syntacore_machine_timer
 #define MTIMER_HAS_DIVIDER
 
 #define MTIMEDIV_REG	(DT_INST_REG_ADDR_U64(0) + 4)
@@ -116,7 +116,11 @@ const int32_t z_sys_timer_irq_for_test = TIMER_IRQN;
 
 static uintptr_t get_hart_mtimecmp(void)
 {
+#if DT_HAS_COMPAT_STATUS_OKAY(syntacore_machine_timer)
+	return MTIMECMP_REG;
+#else
 	return MTIMECMP_REG + (arch_proc_id() * 8);
+#endif
 }
 
 static void set_mtimecmp(uint64_t time)

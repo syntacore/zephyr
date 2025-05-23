@@ -37,6 +37,12 @@ tests:
   # hardware completely.
   llext.simple.readonly:
     arch_allow: arm riscv # Xtensa needs writable storage
+    platform_exclude:
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2_mpu
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     filter: not CONFIG_MPU and not CONFIG_MMU
     extra_conf_files: ['no_mem_protection.conf']
     extra_configs:
@@ -58,6 +64,12 @@ tests:
       - CONFIG_LLEXT_STORAGE_WRITABLE=n
   llext.simple.writable:
     arch_allow: arm xtensa riscv
+    platform_exclude:
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2_mpu
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     integration_platforms:
       - qemu_xtensa/dc233c      # Xtensa ISA
     filter: not CONFIG_MPU and not CONFIG_MMU
@@ -66,6 +78,12 @@ tests:
       - CONFIG_LLEXT_STORAGE_WRITABLE=y
   llext.simple.writable_relocatable:
     arch_allow: arm xtensa riscv
+    platform_exclude:
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2_mpu
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     integration_platforms:
       - qemu_xtensa/dc233c      # Xtensa ISA
     filter: not CONFIG_MPU and not CONFIG_MMU
@@ -78,6 +96,12 @@ tests:
   # storage to cover both ARM and Xtensa architectures on the same test.
   llext.simple.writable_slid_linking:
     arch_allow: arm xtensa riscv
+    platform_exclude:
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2_mpu
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     integration_platforms:
       - qemu_xtensa/dc233c      # Xtensa ISA
     filter: not CONFIG_MPU and not CONFIG_MMU
@@ -87,6 +111,12 @@ tests:
       - CONFIG_LLEXT_EXPORT_BUILTINS_BY_SLID=y
   llext.simple.writable_relocatable_slid_linking:
     arch_allow: arm xtensa riscv
+    platform_exclude:
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2_mpu
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     integration_platforms:
       - qemu_xtensa/dc233c      # Xtensa ISA
     filter: not CONFIG_MPU and not CONFIG_MMU

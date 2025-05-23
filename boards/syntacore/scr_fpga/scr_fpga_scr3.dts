@@ -1,0 +1,129 @@
+/*
+ * Copyright (C) 2024, Syntacore Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <mem.h>
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu0: cpu@0 {
+			device_type = cpu0_devtype:"cpu";
+			reg = <0>;
+			status = "okay";
+			compatible = "syntacore,scr3","riscv";
+			riscv,isa = "rv32imc";
+			clock-frequency = <cpu0_freq:0>;
+
+			d-cache-block-size = <cpu0_dcbs: 16>;
+			d-cache-size = <cpu0_dcsz: 32768>;
+			i-cache-block-size = <cpu0_icbs: 16>;
+			i-cache-size = <cpu0_icsz: 32768>;
+		};
+
+		CPU_intc: interrupt-controller {
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			compatible = "riscv,cpu-intc";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "syntacore,scr3-soc";
+		ranges;
+		
+		tcm: memory@f0000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xf0000000 DT_SIZE_K(64)>;
+			zephyr,memory-region = "TCM";
+		};
+		
+		ddr: memory@0 {
+			compatible = "zephyr,memory-region";
+			reg = <0x0 DT_SIZE_M(2048)>;
+			zephyr,memory-region = "DDR";
+		};
+		
+		mmcfg: memory@f0040000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xf0040000 DT_SIZE_K(8)>;
+			zephyr,memory-region = "MMCFG";
+		};
+		
+		mmio: memory@ff000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xff000000 DT_SIZE_M(8)>;
+			zephyr,memory-region = "MMIO";
+		};
+		
+		ocram: memory@ffff0000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xffff0000 DT_SIZE_K(65)>;
+			zephyr,memory-region = "OCRAM";
+		};
+		
+		mtimer: timer@f0040000 {
+			compatible = "syntacore,machine-timer";
+			reg = <0xf0040000 0x1000>;
+			interrupts = <7>;
+			interrupt-parent = < &CPU_intc >;
+		};
+		
+		mpu: mpu@bc4 {
+			compatible = "syntacore,mpu";
+			reg = <0xbc4 0x1
+				0xbc5 0x1
+				0xbc6 0x1
+				0xbc7 0x1>;
+			reg-names = "select", "control", "address", "mask";
+			num-mpu-regions = <8>;
+		};
+		
+		ipic: interrupt-controller@bf0 {
+			compatible = "riscv,scr-ipic";
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			interrupts-extended = <&CPU_intc 11>;
+
+			reg = <0xbf0 0x10>;
+		};
+		
+		uart: serial@ff010000 {
+			compatible = "ns16550";
+			reg-shift = < 2 >;
+			reg = <0xff010000 0x40>;
+			current-speed = <115200>;
+			status = "okay";
+
+			interrupts = <0>;
+			interrupt-parent = < &ipic >;
+			clock-frequency = <65000000>;
+		};
+	};
+	
+	chosen {
+		zephyr,console = &uart;
+		/* Use DDR as SRAM by default */
+		zephyr,sram = &ddr;
+	};
+};
+

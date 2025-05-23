@@ -1,0 +1,73 @@
+# Copyright (C) 2024, Syntacore Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Kconfig - SCR4 SoC configuration options
+
+# FIXME: non-privileged actually, dependent from Custom IC
+
+config SOC_FAMILY_SCR4
+	bool
+	select RISCV
+	select RISCV_GP
+	select RISCV_PRIVILEGED
+	select RISCV_ISA_EXT_M
+	select RISCV_ISA_EXT_C
+	select RISCV_ISA_EXT_F
+	select RISCV_ISA_EXT_D
+	select RISCV_ISA_EXT_ZICSR
+	select RISCV_ISA_EXT_ZIFENCEI
+	select CPU_HAS_DCACHE
+	select CPU_HAS_ICACHE
+	select SCR_L1_CACHE
+	select SCR_MPU
+	select SOC_PREP_HOOK
+	select SOC_EARLY_INIT_HOOK
+
+config SOC_FAMILY
+	default "SCR4" if SOC_FAMILY_SCR4
+
+config SOC_SERIES_SCR4
+	bool
+	select SOC_FAMILY_SCR4
+	select ATOMIC_OPERATIONS_C
+	select RISCV_ISA_RV32I
+	select SCR_IPIC
+
+config SOC_SERIES_SCR4_L2
+	bool
+	select SOC_FAMILY_SCR4
+	select 64BIT
+	select RISCV_ISA_RV64I
+	select RISCV_ISA_EXT_A
+	select CPU_HAS_FPU_DOUBLE_PRECISION
+	select SCR_L2_CACHE
+	select RISCV_HAS_PLIC
+	select RISCV_EARLY_INIT_SECONDARY if (MP_MAX_NUM_CPUS > 1)
+	select SOC_LATE_INIT_HOOK
+
+config SOC_SERIES
+	default "SCR4" if SOC_SERIES_SCR4
+	default "SCR4 L2" if SOC_SERIES_SCR4_L2
+
+config SOC_SCR4
+	bool
+	select SOC_SERIES_SCR4
+	
+config SOC_SCR4_L2
+	bool
+	select SOC_SERIES_SCR4_L2
+
+config SOC
+	default "SCR4" if SOC_SCR4
+	default "SCR4 L2" if SOC_SCR4_L2
+
+rsource "../Kconfig"

@@ -233,4 +233,13 @@
 				: "memory");			\
 })
 
+#define csr_swap(csr, val)                      \
+({                                              \
+    unsigned long __v = (unsigned long)(val); \
+    __asm__ volatile ("csrrw %0," STRINGIFY(csr) ",%1" \
+                  : "=r" (__v) : "rK" (__v) \
+                  : "memory");                  \
+    __v;                                      \
+})
+
 #endif /* CSR_H_ */

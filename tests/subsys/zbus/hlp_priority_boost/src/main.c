@@ -86,7 +86,7 @@ static void consumer_msg_sub_thread(void *ptr1, void *ptr2, void *ptr3)
 
 ZBUS_MSG_SUBSCRIBER_DEFINE(msub1);
 
-static K_SEM_DEFINE(sync_sem, 1, 1);
+static K_SEM_DEFINE(sync_sem, 0, 1);
 static K_SEM_DEFINE(done_sem, 0, 1);
 
 static struct msg_testing_01 msg = {.seq = 0};
