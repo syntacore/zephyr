@@ -33,7 +33,7 @@ if(NOT "${ARCH}" STREQUAL "posix")
   elseif("${ARCH}" STREQUAL "arm64")
     include(${ZEPHYR_BASE}/cmake/compiler/clang/target_arm64.cmake)
   elseif("${ARCH}" STREQUAL "riscv")
-    include(${ZEPHYR_BASE}/cmake/compiler/gcc/target_riscv.cmake)
+    include(${ZEPHYR_BASE}/cmake/compiler/clang/target_riscv.cmake)
   endif()
 
   foreach(file_name include/stddef.h)

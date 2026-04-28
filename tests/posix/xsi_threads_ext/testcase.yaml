@@ -16,6 +16,9 @@ tests:
       - CONFIG_MINIMAL_LIBC=y
   portability.posix.xsi_threads_ext.newlib:
     filter: TOOLCHAIN_HAS_NEWLIB == 1
+    platform_exclude:
+      # not enough memory
+      - scr_fpga/scr1
     extra_configs:
       - CONFIG_NEWLIB_LIBC=y
   portability.posix.xsi_threads_ext.picolibc:

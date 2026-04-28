@@ -161,6 +161,9 @@
   #endif
 #endif
 
+/* Prohibit stack canary checks generation for a function */
+#define NO_STACK_PROTECTOR __attribute__((__no_stack_protector__))
+
 #define Z_STRINGIFY(x) #x
 #define STRINGIFY(s) Z_STRINGIFY(s)
 

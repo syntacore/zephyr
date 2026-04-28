@@ -129,6 +129,46 @@ if(NOT CONFIG_RISCV_ISA_EXT_M AND
   string(CONCAT riscv_march ${riscv_march} "_zmmul")
 endif()
 
+if(CONFIG_RISCV_ISA_EXT_ZBKB)
+    string(CONCAT riscv_march ${riscv_march} "_zbkb")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZBKC)
+    string(CONCAT riscv_march ${riscv_march} "_zbkc")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZBKX)
+    string(CONCAT riscv_march ${riscv_march} "_zbkx")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZKNE)
+    string(CONCAT riscv_march ${riscv_march} "_zkne")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZKND)
+    string(CONCAT riscv_march ${riscv_march} "_zknd")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZKNH)
+    string(CONCAT riscv_march ${riscv_march} "_zknh")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZKSED)
+    string(CONCAT riscv_march ${riscv_march} "_zksed")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZKSH)
+    string(CONCAT riscv_march ${riscv_march} "_zksh")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZKT)
+    string(CONCAT riscv_march ${riscv_march} "_zkt")
+endif()
+
+if(CONFIG_RISCV_ISA_EXT_ZICBOM)
+    string(CONCAT riscv_march ${riscv_march} "_zicbom")
+endif()
+
 list(APPEND RISCV_C_FLAGS
      -mabi=${riscv_mabi}
      -march=${riscv_march}

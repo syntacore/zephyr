@@ -39,6 +39,12 @@ tests:
       # On it8xxx2_evb, current trigger_irq implementation of RISC-V architecture
       # does not trigger interrupts
       - it8xxx2_evb
+      - scr_fpga/scr1
+      - scr_fpga/scr3
+      - scr_fpga/scr3_l2
+      - scr_fpga/scr4
+      - scr_fpga/scr4_l2
+      - scr_fpga/scr6
     arch_exclude:
       # test needs 2 working interrupt lines
       - xtensa

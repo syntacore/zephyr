@@ -13,3 +13,45 @@ rsource "thead/Kconfig"
 rsource "thead/Kconfig.core"
 
 endif # DT_HAS_XUANTIE_E907_ENABLED
+
+if DT_HAS_SYNTACORE_SCR1_ENABLED
+
+rsource "syntacore/scr1/Kconfig"
+
+endif # DT_HAS_SYNTACORE_SCR1_ENABLED
+
+if DT_HAS_SYNTACORE_SCR3_ENABLED
+
+rsource "syntacore/scr3/Kconfig"
+
+endif # DT_HAS_SYNTACORE_SCR3_ENABLED
+
+if DT_HAS_SYNTACORE_SCR4_ENABLED
+
+rsource "syntacore/scr4/Kconfig"
+
+endif # DT_HAS_SYNTACORE_SCR4_ENABLED
+
+if DT_HAS_SYNTACORE_SCR5_ENABLED
+
+rsource "syntacore/scr5/Kconfig"
+
+endif # DT_HAS_SYNTACORE_SCR5_ENABLED
+
+if DT_HAS_SYNTACORE_SCR6_ENABLED
+
+rsource "syntacore/scr6/Kconfig"
+
+endif # DT_HAS_SYNTACORE_SCR6_ENABLED
+
+if DT_HAS_SYNTACORE_SCR7_ENABLED
+
+rsource "syntacore/scr7/Kconfig"
+
+endif # DT_HAS_SYNTACORE_SCR7_ENABLED
+
+if DT_HAS_SYNTACORE_SCR9_ENABLED
+
+rsource "syntacore/scr9/Kconfig"
+
+endif # DT_HAS_SYNTACORE_SCR9_ENABLED

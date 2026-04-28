@@ -25,7 +25,7 @@
 #include <zephyr/logging/log_output_custom.h>
 #include <zephyr/linker/utils.h>
 
-#if CONFIG_USERSPACE && CONFIG_LOG_ALWAYS_RUNTIME
+#if defined(CONFIG_USERSPACE) && defined(CONFIG_LOG_ALWAYS_RUNTIME)
 #include <zephyr/app_memory/app_memdomain.h>
 K_APPMEM_PARTITION_DEFINE(k_log_partition);
 #endif

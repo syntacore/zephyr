@@ -14,6 +14,10 @@ check_set_linker_property(TARGET linker APPEND PROPERTY gprof -pg)
 add_link_options(-gdwarf-4)
 
 # Extra warnings options for twister run
-set_property(TARGET linker PROPERTY warnings_as_errors -Wl,--fatal-warnings)
+if("${GNULD_VERSION_STRING}" VERSION_GREATER 2.38)
+  set_property(TARGET linker PROPERTY warnings_as_errors -Wl,--fatal-warnings -Wl,--no-warn-rwx-segments)
+else()
+  set_property(TARGET linker PROPERTY warnings_as_errors -Wl,--fatal-warnings)
+endif()
 
 set_linker_property(PROPERTY specs -specs=)

@@ -12,7 +12,7 @@
 #if !DT_NODE_EXISTS(CLINT_NODE)
 #error "Label 'clint' is not defined in the devicetree."
 #endif
-#define MSIP_BASE DT_REG_ADDR_RAW(CLINT_NODE)
+#define MSIP_BASE DT_REG_ADDR_U64(CLINT_NODE)
 #define MSIP(hartid) ((volatile uint32_t *)MSIP_BASE)[hartid]
 
 static atomic_val_t cpu_pending_ipi[CONFIG_MP_MAX_NUM_CPUS];

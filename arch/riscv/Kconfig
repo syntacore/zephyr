@@ -243,7 +243,20 @@ config RISCV_HAS_PLIC
 	bool
 	depends on RISCV_PRIVILEGED
 	help
-	  Does the SOC provide support for a Platform Level Interrupt Controller (PLIC).
+	  Does the SOC provide support for a Platform Level Interrupt Controller (PLIC)
+	  
+config RISCV_HAS_APLIC
+	bool
+	depends on RISCV_PRIVILEGED
+	help
+	  Does the SOC provide support for a Advanced Platform Level 
+	  Interrupt Controller (APLIC)
+
+config RISCV_HAS_IMSIC
+	bool
+	depends on RISCV_PRIVILEGED
+	help
+	  Does the SOC provide support for an Incoming MSI Controller (IMSIC) 
 
 config RISCV_HAS_CLIC
 	bool
@@ -252,6 +265,11 @@ config RISCV_HAS_CLIC
 	select CLIC_SUPPORT_INTERRUPT_LEVEL if !NRFX_CLIC
 	help
 	  Does the SOC provide support for a Core-Local Interrupt Controller (CLIC).
+	  
+config RISCV_HAS_CUSTOM_IC
+	bool "Does the SOC provide support for a custom Interrupt Controller (IC)"
+	help
+	  Does the SOC provide support for a non-standard, custom Interrupt Controller (IC).
 
 config CLIC_SUPPORT_INTERRUPT_LEVEL
 	bool
@@ -352,10 +370,7 @@ config RISCV_PMP
 	bool "RISC-V PMP Support"
 	select THREAD_STACK_INFO
 	select CPU_HAS_MPU
-	select ARCH_HAS_USERSPACE
-	select ARCH_HAS_STACK_PROTECTION
 	select MPU
-	select SRAM_REGION_PERMISSIONS
 	select ARCH_MEM_DOMAIN_SYNCHRONOUS_API if USERSPACE
 	select ARCH_MEM_DOMAIN_DATA if USERSPACE
 	select THREAD_LOCAL_STORAGE if USERSPACE
@@ -363,6 +378,39 @@ config RISCV_PMP
 	select MEM_DOMAIN_ISOLATED_STACKS
 	help
 	  MCU implements Physical Memory Protection.
+	  
+config RISCV_EARLY_INIT_SECONDARY
+	bool "RISC-V Secondary cores early initialilzation"
+	depends on (MP_MAX_NUM_CPUS > 1)
+	default n
+	help
+	  Enables Secondary cores early initialilzation.
+	  This may be useful to bring the Secondary cores
+	  to a known state required for further initialization,
+	  e.g. to pre-configure Caches, Memory protection, etc.
+	  
+	  The implementation should be in Assembler or in C with stack
+	  protection disabled to avoid race condition with Primary core.
+	  
+config RISCV_EARLY_INIT_SECONDARY_STACK_SIZE
+	int
+	depends on RISCV_EARLY_INIT_SECONDARY && INIT_STACKS
+	default 512
+	help
+	  Enables distinct early initialization stacks for Secondary cores.
+	  Primary core won't touch these stacks during the stack 
+	  poisoning when CONFIG_INIT_STACKS is enabled.
+	  Without CONFIG_INIT_STACKS it is safe to use ordinary 
+	  z_interrupt_stacks during the early initialization,
+	  so this feature is disabled in most of the times.
+	  
+config RISCV_MISALIGNED_ACCESS_SUPPORT
+	bool "SW handling of misaligned access for RISC-V platforms"
+	select RISCV_SOC_HAS_ISR_STACKING
+	select RISCV_SOC_OFFSETS
+	help
+	  Enables misaligned Load and Store/AMO address exceptions handling
+	  in SW
 
 if RISCV_PMP
 
@@ -408,6 +456,15 @@ config PMP_GRANULARITY
 	  The granularity must be a power of 2 greater than or equal to 4
 	  (ie 4, 8, 16, ...), but if neither TOR mode nor NA4 mode is
 	  supported, the minimum granularity is 8.
+
+config ARCH_HAS_STACK_PROTECTION
+	default y
+
+config SRAM_REGION_PERMISSIONS
+	default y
+
+config ARCH_HAS_USERSPACE
+	default y
 
 endif #RISCV_PMP
 
@@ -466,6 +523,9 @@ config MAIN_STACK_SIZE
 	default 4096 if 64BIT
 	default 2048 if PMP_STACK_GUARD
 
+config IDLE_STACK_SIZE
+	default 1024 if 64BIT
+
 config TEST_EXTRA_STACK_SIZE
 	default 4096 if CPP_EXCEPTIONS
 	default 1536
@@ -494,6 +554,13 @@ config GEN_IRQ_VECTOR_TABLE
 
 config ARCH_HAS_SINGLE_THREAD_SUPPORT
 	default y if !SMP
+	
+config RISCV_MIN_STACK_OBJ_ALIGN_AND_SIZE
+	int "Minimum stack objects alignment and size"
+	default 8 if 64BIT
+	default 4
+	help
+	  Minimum stack object alignment and size for RISC-V platforms
 
 config ARCH_HAS_STACKWALK
 	bool

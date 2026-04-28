@@ -10,6 +10,7 @@
 #include <inttypes.h>
 #include <zephyr/arch/common/exc_handle.h>
 #include <zephyr/logging/log.h>
+#include <zephyr/logging/log_ctrl.h>
 LOG_MODULE_DECLARE(os, CONFIG_KERNEL_LOG_LEVEL);
 
 #ifdef CONFIG_USERSPACE
@@ -82,6 +83,12 @@ FUNC_NORETURN void z_riscv_fatal_error(unsigned int reason,
 {
 	__maybe_unused _callee_saved_t *csf = NULL;
 	unsigned long mcause;
+
+	/*
+	 * Turned log system to synchronous mode to block possibility switching  
+	 * to another log system context at the fatal error execution
+	 */
+	LOG_PANIC(); 
 
 	__asm__ volatile("csrr %0, mcause" : "=r" (mcause));
 

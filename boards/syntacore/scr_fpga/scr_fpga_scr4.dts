@@ -1,0 +1,117 @@
+/*
+ * Copyright (C) 2026, Syntacore Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <mem.h>
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu0: cpu@0 {
+			compatible ="syntacore,scr4", "riscv";
+			reg = <0>;
+			riscv,isa = "rv32imfdc";
+		};
+
+		CPU_intc: interrupt-controller {
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			compatible = "riscv,cpu-intc";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "syntacore,scr4-soc";
+		ranges;
+		
+		ddr: memory@0 {
+			compatible = "zephyr,memory-region";
+			reg = <0x0 0x80000000>;
+			zephyr,memory-region = "DDR";
+		};
+		
+		mmcfg: memory@f0040000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xf0040000 0x2000>;
+			zephyr,memory-region = "MMCFG";
+		};
+		
+		mmio: memory@ff000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xff000000 0x800000>;
+			zephyr,memory-region = "MMIO";
+		};
+		
+		ocram: memory@ffff0000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xffff0000 0x10000>;
+			zephyr,memory-region = "OCRAM";
+		};
+		
+		mtimer: timer@f0040008 {
+			compatible = "syntacore,machine-timer";
+			reg = <0xf0040008 0x8
+				0xf0040010 0x8
+				0xf0040004 0x4>;
+			reg-names = "mtime", "mtimecmp", "mtimediv";
+			interrupts-extended = <&CPU_intc 7>;
+		};
+		
+		mpu: mpu@bc4 {
+			compatible = "syntacore,mpu";
+			reg = <0xbc4 0x1
+				0xbc5 0x1
+				0xbc6 0x1
+				0xbc7 0x1>;
+			reg-names = "select", "control", "address", "mask";
+			num-mpu-regions = <8>;
+		};
+		
+		ipic: interrupt-controller@bf0 {
+			compatible = "riscv,scr-ipic";
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			interrupts-extended = <&CPU_intc 11>;
+
+			reg = <0xbf0 0x10>;
+		};
+		
+		uart: serial@ff010000 {
+			compatible = "ns16550";
+			reg-shift = < 2 >;
+			reg = <0xff010000 0x40>;
+			current-speed = <115200>;
+			status = "okay";
+
+			interrupts = <0>;
+			interrupt-parent = < &ipic >;
+			clock-frequency = <65000000>;
+		};
+	};
+	
+	chosen {
+		zephyr,console = &uart;
+		/* Use DDR as SRAM by default */
+		zephyr,sram = &ddr;
+	};
+};
+

@@ -32,6 +32,8 @@ zephyr_library_sources_ifdef(CONFIG_THREAD_LOCAL_STORAGE tls.c)
 zephyr_library_sources_ifdef(CONFIG_USERSPACE userspace.S)
 zephyr_library_sources_ifdef(CONFIG_SEMIHOST semihost.c)
 zephyr_library_sources_ifdef(CONFIG_ARCH_STACKWALK stacktrace.c)
+zephyr_library_sources_ifdef(CONFIG_CACHE_MANAGEMENT cache.c)
+zephyr_library_sources_ifdef(CONFIG_RISCV_MISALIGNED_ACCESS_SUPPORT emu_ldst.c)
 zephyr_linker_sources(ROM_START SORT_KEY 0x0vectors vector_table.ld)
 zephyr_library_sources_ifdef(CONFIG_LLEXT elf.c)
 

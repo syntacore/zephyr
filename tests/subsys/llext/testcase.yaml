@@ -40,6 +40,11 @@ tests:
       - riscv
       - arc
       - x86
+    platform_exclude:
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     filter: not CONFIG_MPU and not CONFIG_MMU
     extra_conf_files: ['no_mem_protection.conf']
     extra_configs:
@@ -71,6 +76,11 @@ tests:
       - riscv
       - arc
       - x86
+    platform_exclude:
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     integration_platforms:
       - qemu_xtensa/dc233c      # Xtensa ISA
     filter: not CONFIG_MPU and not CONFIG_MMU
@@ -89,6 +99,10 @@ tests:
       - nsim/nsim_hs5x             # See #80949
       - nsim/nsim_hs5x/smp         # See #80949
       - nsim/nsim_hs5x/smp/12cores # See #80949
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     integration_platforms:
       - qemu_xtensa/dc233c      # Xtensa ISA
     filter: not CONFIG_MPU and not CONFIG_MMU
@@ -106,6 +120,11 @@ tests:
       - riscv
       - arc
       - x86
+    platform_exclude:
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     integration_platforms:
       - qemu_xtensa/dc233c      # Xtensa ISA
     filter: not CONFIG_MPU and not CONFIG_MMU
@@ -125,6 +144,10 @@ tests:
       - nsim/nsim_hs5x             # See #80949
       - nsim/nsim_hs5x/smp         # See #80949
       - nsim/nsim_hs5x/smp/12cores # See #80949
+      - scr_fpga/scr6
+      - scr_fpga/scr7_l2
+      - scr_fpga/scr9_l2
+      - scr_fpga/scr9_l3
     integration_platforms:
       - qemu_xtensa/dc233c      # Xtensa ISA
     filter: not CONFIG_MPU and not CONFIG_MMU

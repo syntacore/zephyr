@@ -1,0 +1,13 @@
+# Copyright (c) Syntacore 2024. All rights reserved.
+
+# SPDX-License-Identifier: Apache-2.0
+
+description: |
+  Syntacore Machine Timer
+
+  The Syntacore machine timer provides RISC-V privileged mtime and mtimecmp
+  registers.
+
+compatible: "syntacore,machine-timer"
+
+include: "riscv,machine-timer.yaml"

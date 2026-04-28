@@ -18,8 +18,10 @@ GTEXT(__reset)
 /* imports */
 GTEXT(z_prep_c)
 GDATA(riscv_cpu_wake_flag)
+GDATA(riscv_cpu_boot_flag)
 GDATA(riscv_cpu_sp)
 GTEXT(arch_secondary_cpu_init)
+GTEXT(riscv_early_init_secondary)
 
 #if CONFIG_INCLUDE_RESET_VECTOR
 SECTION_FUNC(reset, __reset)
@@ -39,6 +41,31 @@ SECTION_FUNC(reset, __reset)
  */
 SECTION_FUNC(TEXT, __initialize)
 	csrr a0, mhartid
+	/* Keep logical CPU ID in a1 */
+	li a1, 0
+
+#ifdef CONFIG_RISCV_EARLY_INIT_SECONDARY
+	/* Keep the current address of cpu array element in t0 */
+	la t0, riscv_cpu_node_list
+	/* Keep the array end address in t1 */
+	la t1, riscv_cpu_node_list_size
+	lb t1, 0(t1)
+	add t1, t0, t1
+
+check_next_node_id:
+	/* Keep current CPU's hartid in t2 */
+	lb t2, 0(t0)
+	/* Proceed with early initialization for a CPU with known hartid */
+	beq a0, t2, boot_configued_cores
+	/* Check next array element, increment logical CPU ID */
+	addi a1, a1, 1
+	addi t0, t0, 1
+	blt t0, t1, check_next_node_id
+	/* Park the CPUs with unknown hartid */
+	j loop_unconfigured_cores
+#endif /* CONFIG_RISCV_EARLY_INIT_SECONDARY */
+
+boot_configued_cores:
 	li t0, CONFIG_RV_BOOT_HART
 	beq a0, t0, boot_first_core
 	j boot_secondary_core
@@ -76,10 +103,11 @@ aa_loop:
 
 	/*
 	 * Initially, setup stack pointer to
-	 * z_interrupt_stacks + __z_interrupt_stack_SIZEOF
+	 * z_interrupt_stacks[LOGICAL_CPU_ID] + __z_interrupt_stack_SIZEOF
 	 */
 	la sp, z_interrupt_stacks
 	li t0, __z_interrupt_stack_SIZEOF
+	shiftmul_add sp, a1, __z_interrupt_stack_SIZEOF
 	add sp, sp, t0
 
 #ifdef CONFIG_WDOG_INIT
@@ -94,18 +122,42 @@ aa_loop:
 
 boot_secondary_core:
 #if CONFIG_MP_MAX_NUM_CPUS > 1
-	la t0, riscv_cpu_wake_flag
-	li t1, -1
-	sr t1, 0(t0)
-	la t0, riscv_cpu_boot_flag
-	sr zero, 0(t0)
+#ifdef CONFIG_RISCV_EARLY_INIT_SECONDARY
+	/*
+	 * Setup stack for early initialization stage.
+	 * We follow the common Zephyr rule and reuse interrupt stack
+	 * during the early initialization if no stack poisoning is expected,
+	 * otherwise - we use special safe stacks.
+	 * Simplest stack layout is used.
+	 * When early initialization is complete z_interrupt_stacks stack will
+	 * be reconfigured by Primary core.
+	 */
+#ifdef CONFIG_INIT_STACKS
+	la sp, riscv_early_secondary_stacks
+	li t0, CONFIG_RISCV_EARLY_INIT_SECONDARY_STACK_SIZE
+	shiftmul_add sp, a1, CONFIG_RISCV_EARLY_INIT_SECONDARY_STACK_SIZE
+#else
+	la sp, z_interrupt_stacks
+	li t0, __z_interrupt_stack_SIZEOF
+	shiftmul_add sp, a1, __z_interrupt_stack_SIZEOF
+#endif /* CONFIG_INIT_STACKS */
+	add sp, sp, t0
 
+	/*
+	 * Perform Secondary cores early initialization:
+	 * disable caches, relax memory protection
+	 */
+	call riscv_early_init_secondary
+	csrr a0, mhartid
+#endif /* CONFIG_RISCV_EARLY_INIT_SECONDARY */
+
+/* Spin on wake flag which is to be raised by Primary core */
 wait_secondary_wake_flag:
 	la t0, riscv_cpu_wake_flag
 	lr t0, 0(t0)
 	bne a0, t0, wait_secondary_wake_flag
 
-	/* Set up stack */
+	/* Apply stack provided by Master core to complete initialization in C-domain */
 	la t0, riscv_cpu_sp
 	lr sp, 0(t0)
 
@@ -115,7 +167,7 @@ wait_secondary_wake_flag:
 	j arch_secondary_cpu_init
 #else
 	j loop_unconfigured_cores
-#endif
+#endif /* CONFIG_MP_MAX_NUM_CPUS > 1 */
 
 loop_unconfigured_cores:
 	wfi

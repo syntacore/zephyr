@@ -8,9 +8,6 @@ compatible: "riscv,clic"
 include: [interrupt-controller.yaml, base.yaml]
 
 properties:
-  reg:
-    required: true
-
   "#interrupt-cells":
     const: 2
 

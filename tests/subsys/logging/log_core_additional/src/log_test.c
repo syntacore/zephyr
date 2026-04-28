@@ -35,7 +35,7 @@ ZTEST_BMEM uint8_t domain, level;
 ZTEST_DMEM uint32_t msg_data = 0x1234;
 
 /* Memory domain for tests with threads in user space (ZTEST_USER) */
-#if CONFIG_USERSPACE
+#ifdef CONFIG_USERSPACE
 static struct k_mem_domain mem_domain;
 static struct k_mem_partition *mem_parts[] = {
 #if Z_LIBC_PARTITION_EXISTS
@@ -585,7 +585,7 @@ static void *test_log_core_additional_setup(void)
 	k_thread_foreach(promote_log_thread, NULL);
 #endif
 
-#if CONFIG_USERSPACE
+#ifdef CONFIG_USERSPACE
 	/* Set memory domain for threads in user space */
 	k_mem_domain_init(&mem_domain, ARRAY_SIZE(mem_parts), mem_parts);
 	k_mem_domain_add_thread(&mem_domain, k_current_get());

@@ -1,0 +1,55 @@
+/*
+ * Copyright (C) 2026, Syntacore Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <mem.h>
+
+/dts-v1/;
+
+/ {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+		cpu0: cpu@0 {
+			reg = <0>;
+			compatible ="syntacore,scr1", "riscv";
+			riscv,isa = "rv32imc";
+		};
+
+		CPU_intc: interrupt-controller {
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			compatible = "riscv,cpu-intc";
+		};
+	};
+
+	soc {
+		#address-cells = <1>;
+		#size-cells = <1>;
+		compatible = "syntacore,scr1-soc";
+		ranges;
+		
+		ipic: interrupt-controller@bf0 {
+			compatible = "riscv,scr-ipic";
+			#address-cells = <0>;
+			#interrupt-cells = <1>;
+			interrupt-controller;
+			interrupts-extended = <&CPU_intc 11>;
+
+			reg = <0xbf0 0x10>;
+		};
+	};
+};

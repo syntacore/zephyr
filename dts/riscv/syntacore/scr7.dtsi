@@ -1,0 +1,120 @@
+/*
+ * Copyright (C) 2026, Syntacore Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+#include <mem.h>
+
+/dts-v1/;
+
+/ {
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		cpu0: cpu@0 {
+			compatible ="syntacore,scr7", "riscv";
+			reg = <0>;
+			riscv,isa = "rv64imafdc";
+			
+			cpu0_intc: interrupt-controller {
+				compatible = "riscv,cpu-intc";
+				#address-cells = <0>;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+		};
+		
+		cpu1: cpu@1 {
+			compatible ="syntacore,scr7", "riscv";
+			reg = <1>;
+			riscv,isa = "rv64imafdc";
+			
+			cpu1_intc: interrupt-controller {
+				compatible = "riscv,cpu-intc";
+				#address-cells = <0>;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+		};
+		
+		cpu2: cpu@2 {
+			compatible ="syntacore,scr7", "riscv";
+			reg = <2>;
+			riscv,isa = "rv64imafdc";
+			
+			cpu2_intc: interrupt-controller {
+				compatible = "riscv,cpu-intc";
+				#address-cells = <0>;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+		};
+		
+		cpu3: cpu@3 {
+			compatible ="syntacore,scr7", "riscv";
+			reg = <3>;
+			riscv,isa = "rv64imafdc";
+			
+			cpu3_intc: interrupt-controller {
+				compatible = "riscv,cpu-intc";
+				#address-cells = <0>;
+				#interrupt-cells = <1>;
+				interrupt-controller;
+			};
+		};
+	};
+
+	soc {
+		#address-cells = <2>;
+		#size-cells = <1>;
+		compatible = "syntacore,scr7-soc";
+
+		mtimer: timer@fffffffff0040008 {
+			compatible = "syntacore,machine-timer";
+			reg = <0xffffffff 0xf0040008 0x8
+				0xffffffff 0xf0040010 0x8
+				0xffffffff 0xf0040004 0x4>;
+			reg-names = "mtime", "mtimecmp", "mtimediv";
+			interrupts-extended = <&cpu0_intc 7>;
+		};
+
+		plic: interrupt-controller@fffffffffe000000 {
+			#address-cells = <2>;
+			#interrupt-cells = <2>;
+			compatible = "sifive,plic-1.0.0", "riscv,plic0";
+			interrupt-controller;
+			interrupts-extended = <&cpu0_intc 11
+				&cpu1_intc 11
+				&cpu2_intc 11
+				&cpu3_intc 11>;	
+
+			reg = <0xffffffff 0xfe000000 0x00001000
+				0xffffffff 0xfe002000  0x00004000
+				0xffffffff 0xfe200000  0x00040000 >;
+			reg-names = "prio", "irq_en", "reg";
+
+			riscv,max-priority = <4>;
+			riscv,ndev = <127>;
+		};
+
+		uart: serial@ffffffffff010000 {
+			compatible = "ns16550";
+			reg-shift = < 2 >;
+			reg = <0xffffffff 0xff010000 0x40>;
+			interrupt-parent = <&plic>;
+			interrupts = <1 1>; // IRQ PRIO
+			current-speed = <115200>;
+			status = "okay";
+		};
+	};
+};

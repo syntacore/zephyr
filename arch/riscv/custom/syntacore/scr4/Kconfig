@@ -1,0 +1,55 @@
+# Copyright (C) 2026, Syntacore Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Kconfig - SCR4 core configuration options
+
+config CPU_SCR4
+	bool
+	select RISCV_SOC_HAS_GP_RELATIVE_ADDRESSING
+	select RISCV_PRIVILEGED
+	select RISCV_ISA_EXT_M
+	select RISCV_ISA_EXT_C
+	select RISCV_ISA_EXT_F
+	select RISCV_ISA_EXT_D
+	select RISCV_ISA_EXT_ZICSR
+	select RISCV_ISA_EXT_ZIFENCEI
+	select RISCV_ISA_EXT_ZBA
+	select RISCV_ISA_EXT_ZBB
+	select RISCV_ISA_EXT_ZBC
+	select RISCV_ISA_EXT_ZBS
+	select RISCV_ISA_EXT_ZBKB
+	select RISCV_ISA_EXT_ZBKX
+	select RISCV_ISA_EXT_ZKNE
+	select RISCV_ISA_EXT_ZKND
+	select RISCV_ISA_EXT_ZKNH
+	select CPU_HAS_DCACHE
+	select CPU_HAS_ICACHE
+	select SCR_L1_CACHE
+	select SCR_MPU
+	
+config CPU_SCR4_V1
+	bool
+	select CPU_SCR4
+	select ATOMIC_OPERATIONS_C
+	select RISCV_ISA_RV32I
+	select SCR_IPIC
+
+config CPU_SCR4_V2
+	bool
+	select CPU_SCR4
+	select RISCV_ISA_RV64I
+	select RISCV_ISA_EXT_A
+	select SCR_L2_CACHE
+	select RISCV_HAS_PLIC
+	select RISCV_EARLY_INIT_SECONDARY if (MP_MAX_NUM_CPUS > 1)
+
+rsource "../Kconfig"

@@ -1,0 +1,60 @@
+/*
+ * Copyright (C) 2024, Syntacore Ltd.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+/dts-v1/;
+
+#include "syntacore/scr1.dtsi"
+
+/ {
+	model = "scr1";
+	compatible = "scr,scr1";
+	
+	soc {
+		tcm: memory@f0000000 {
+			compatible = "zephyr,memory-region";
+			reg = <0xf0000000 DT_SIZE_K(64)>;
+			zephyr,memory-region = "TCM";
+		};
+				
+		mtimer: timer@f0040008 {
+			compatible = "syntacore,machine-timer";
+			reg = <0xf0040008 0x8
+				0xf0040010 0x8
+				0xf0040004 0x4>;
+			reg-names = "mtime", "mtimecmp", "mtimediv";
+			interrupts-extended = <&CPU_intc 7>;
+		};
+		
+		uart: serial@ff010000 {
+			compatible = "ns16550";
+			reg-shift = < 2 >;
+			reg = <0xff010000 0x40>;
+			current-speed = <115200>;
+			status = "okay";
+
+			interrupts = <0>;
+			interrupt-parent = < &ipic >;
+		};
+	};
+
+	chosen {
+		zephyr,console = &uart;
+		/* Use TCM as SRAM by default */
+		zephyr,sram = &tcm;
+	};
+};
+
+&uart {
+	clock-frequency = <90000000>;
+};

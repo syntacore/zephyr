@@ -244,3 +244,108 @@ config RISCV_ISA_EXT_ZMMUL
 
 	  The Zmmul extension implements the multiplication subset of the M
 	  extension.
+
+config RISCV_ISA_EXT_ZBKB
+	bool
+	help
+	  (Zbkb) - Bitmanip instructions for Scalar Crypto Extension
+
+	  This extension is a subset of the Bitmanipulation Extension Zbb which 
+	  is particularly useful for Cryptography.
+
+config RISCV_ISA_EXT_ZBKC
+	bool
+	help
+	  (Zbkc) - Carry-less multiply instructions of Scalar Crypto Extension
+
+	  Constant time carry-less multiply for Galois/Counter Mode. These instructions
+	  are separated from the Zbkb because they have a considerable implementation 
+	  overhead which cannot be amortised across other instructions.
+
+config RISCV_ISA_EXT_ZBKX
+	bool
+	help
+	  (Zbkx) - Crossbar permutation instructions of Scalar Crypto Extension
+
+	  These instructions are useful for implementing SBoxes in constant time, 
+	  and potentially with DPA protections. These are 
+	  separated from the Zbkb because they have a considerable implementation 
+	  overhead which cannot be amortised across other instructions.
+
+config RISCV_ISA_EXT_ZKNE
+	bool
+	help
+	  (Zkne) - NIST Suite: AES Encryption of Scalar Crypto Extension
+
+	  Instructions for accelerating the encryption and key-schedule functions 
+	  of the AES block cipher.
+
+config RISCV_ISA_EXT_ZKND
+	bool
+	help
+	  (Zknd) - NIST Suite: AES Decryption of Scalar Crypto Extension
+
+	  Instructions for accelerating the decryption and key-schedule functions 
+	  of the AES block cipher.
+
+config RISCV_ISA_EXT_ZKNH
+	bool
+	help
+	  (Zknh) - NIST Suite: Hash Function Instructions of Scalar Crypto Extension
+
+	  Instructions for accelerating the SHA2 family of cryptographic hash functions
+
+config RISCV_ISA_EXT_ZKN
+	bool
+	select RISCV_ISA_EXT_ZBKB
+	select RISCV_ISA_EXT_ZBKC
+	select RISCV_ISA_EXT_ZBKX
+	select RISCV_ISA_EXT_ZKNE
+	select RISCV_ISA_EXT_ZKND
+	select RISCV_ISA_EXT_ZKNH
+	help
+	  (Zkn) - NIST Algorithm Suite of Scalar Crypto Extension
+
+	  This extension is shorthand for the following set of other extensions:
+	  Zbkb, Zbkc, Zbkx, Zkne, Zknd, Zknh
+
+config RISCV_ISA_EXT_ZKSED
+	bool
+	help
+	  (Zksed) - ShangMi Suite: SM4 Block Cipher Instructions of Scalar Crypto Extension
+
+	  Instructions for accelerating the SM4 Block Cipher. Note that unlike AES, 
+	  this cipher uses the same core operation for encryption and decryption, 
+	  hence there is only one extension for it.
+
+config RISCV_ISA_EXT_ZKSH
+	bool
+	help
+	  (Zksh) - ShangMi Suite: SM3 Hash Function Instructions of Scalar Crypto Extension
+
+	  Instructions for accelerating the SM3 hash function.
+
+config RISCV_ISA_EXT_ZKT
+	bool
+	help
+	  (Zkt) - Data Independent Execution Latency Subset of Scalar Crypto Extension
+
+	  The Zkt extension attests that the machine has data-independent execution time 
+	  for a safe subset of instructions. This property is commonly called 
+	  "constant-time" although should not be taken with that literal meaning.
+
+	  All currently proposed cryptographic instructions (scalar K extension) 
+	  are on this list, together with a set of relevant supporting instructions 
+	  from I, M, C, and B extensions. Zkt does not define a set of instructions 
+	  available in the core; it just restricts the behaviour of certain instructions 
+	  if those are implemented, so that they do not leak information about processed 
+	  secret data (plaintext, keying information, etc) through differences 
+	  in execution latency.
+	  
+config RISCV_ISA_EXT_ZICBOM
+	bool
+	help
+	  (Zicbom) - Extension for cache-block management instructions
+
+	  The Zicbom extension defines a set of cache-block management instructions: 
+	  CBO.INVAL, CBO.CLEAN, and CBO.FLUSH

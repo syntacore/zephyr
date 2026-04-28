@@ -1,0 +1,33 @@
+# Copyright (C) 2026, Syntacore Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Kconfig - SCR6 SoC configuration options
+
+config SOC_SERIES
+	default "scr6" if SOC_SERIES_SCR6
+
+config SOC_SERIES_SCR6
+	bool
+	select SOC_FAMILY_SYNTACORE
+
+config SOC_SCR6
+	bool
+	select RISCV
+	select SOC_SERIES_SCR6
+	select CPU_SCR6_V1
+	select SOC_PREP_HOOK
+	select SOC_EARLY_INIT_HOOK
+	select SOC_LATE_INIT_HOOK
+	
+config SOC
+	default "SCR6" if SOC_SCR6
+	

@@ -28,7 +28,7 @@
 #include <zephyr/drivers/interrupt_controller/riscv_plic.h>
 #include <zephyr/irq.h>
 
-#define PLIC_BASE_ADDR(n) DT_INST_REG_ADDR(n)
+#define PLIC_BASE_ADDR(n) DT_INST_REG_ADDR_U64(n)
 /*
  * These registers' offset are defined in the RISCV PLIC specs, see:
  * https://github.com/riscv/riscv-plic-spec
@@ -906,6 +906,11 @@ SHELL_CMD_REGISTER(plic, &plic_cmds, "PLIC shell commands", NULL);
 	INTC_PLIC_STATIC const uint32_t plic_hart_contexts_##n[DT_CHILD_NUM(DT_PATH(cpus))] = {    \
 		LISTIFY(DT_INST_NUM_IRQS(n), HART_CONTEXTS, (), n)}
 
+/*
+ * FIXME: SCR PLIC is not always compliant with the Spec, see #36689 and
+ * 39433f0669f1fd620f36605d1c3df61a6cf97ae2
+ */
+#if 0
 #define PLIC_INTC_CONFIG_INIT(n)                                                                   \
 	PLIC_INTC_IRQ_FUNC_DECLARE(n);                                                             \
 	PLIC_HART_CONTEXT_DECLARE(n);                                                              \
@@ -926,6 +931,28 @@ SHELL_CMD_REGISTER(plic, &plic_cmds, "PLIC shell commands", NULL);
 		.hart_context = plic_hart_contexts_##n,                                            \
 	};                                                                                         \
 	PLIC_INTC_IRQ_FUNC_DEFINE(n)
+#else
+#define PLIC_INTC_CONFIG_INIT(n)                                                                   \
+	PLIC_INTC_IRQ_FUNC_DECLARE(n);                                                             \
+	PLIC_HART_CONTEXT_DECLARE(n);                                                              \
+	static const struct plic_config plic_config_##n = {                                        \
+		.prio = DT_INST_REG_ADDR_BY_NAME_U64(n, prio),                                  \
+		.irq_en = DT_INST_REG_ADDR_BY_NAME_U64(n, irq_en),                              \
+		.reg = DT_INST_REG_ADDR_BY_NAME_U64(n, reg),                                   \
+		IF_ENABLED(CONFIG_PLIC_SUPPORTS_SOFT_INTERRUPT,                                    \
+				(.pend = PLIC_BASE_ADDR(n) + CONTEXT_PENDING_BASE,))                    \
+		IF_ENABLED(CONFIG_PLIC_SUPPORTS_TRIG_TYPE,                                         \
+			   (.trig = PLIC_BASE_ADDR(n) + CONFIG_PLIC_TRIG_TYPE_REG_OFFSET,))        \
+		.max_prio = DT_INST_PROP(n, riscv_max_priority),                                   \
+		.riscv_ndev = DT_INST_PROP(n, riscv_ndev),                      \
+		.nr_irqs = PLIC_MIN_IRQ_NUM(n),                                                    \
+		.irq = DT_INST_IRQN(n),                                                            \
+		.irq_config_func = plic_irq_config_func_##n,                                       \
+		.isr_table = &_sw_isr_table[INTC_INST_ISR_TBL_OFFSET(n)],                          \
+		.hart_context = plic_hart_contexts_##n,                                            \
+	};                                                                                         \
+	PLIC_INTC_IRQ_FUNC_DEFINE(n)
+#endif
 
 #define PLIC_INTC_DEVICE_INIT(n)                                                                   \
 	IRQ_PARENT_ENTRY_DEFINE(                                                                   \

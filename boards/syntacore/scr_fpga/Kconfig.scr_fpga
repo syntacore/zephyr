@@ -1,0 +1,30 @@
+# Copyright (C) 2026, Syntacore Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+config BOARD_SCR_FPGA
+        select SOC_SCR1 if BOARD_SCR_FPGA_SCR1
+        select SOC_SCR3 if BOARD_SCR_FPGA_SCR3
+        select SOC_SCR3_L2 if BOARD_SCR_FPGA_SCR3_L2
+        select SOC_SCR4 if BOARD_SCR_FPGA_SCR4
+        select SOC_SCR4_L2 if BOARD_SCR_FPGA_SCR4_L2
+        select SOC_SCR5_RV32 if BOARD_SCR_FPGA_SCR5_RV32
+        select SOC_SCR5_RV64 if BOARD_SCR_FPGA_SCR5_RV64
+        select SOC_SCR5_ACLINT if BOARD_SCR_FPGA_SCR5_ACLINT
+        select SOC_SCR6 if BOARD_SCR_FPGA_SCR6
+        select SOC_SCR7_L2 if BOARD_SCR_FPGA_SCR7_L2
+        select SOC_SCR9_L2 if BOARD_SCR_FPGA_SCR9_L2
+        select SOC_SCR9_L3 if BOARD_SCR_FPGA_SCR9_L3
+        help
+          Syntacore FPGA is a virtual board which acts as a
+          bitstream testing platform. 
+          It demonstrates the Syntacore CPUs features.
+

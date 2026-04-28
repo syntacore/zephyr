@@ -13,6 +13,8 @@ tests:
     # configuration can only be verified against compilation errors on a single core.
     platform_allow: native_sim
     build_only: true
+    # IssueID #32966: probably not needed anymore, since the test is build-only now
+    filter: not CONFIG_SPSC_PBUF_NO_CACHE
     extra_configs:
       - CONFIG_SPSC_PBUF_CACHE_ALWAYS=y
 

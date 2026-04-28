@@ -59,7 +59,7 @@
 #endif
 
 #ifndef NUM_PHIL
-#define NUM_PHIL 6
+#define NUM_PHIL 640
 #endif
 
 #ifndef STATIC_OBJS
@@ -77,7 +77,7 @@
 #endif
 
 #ifndef SAME_PRIO
-#define SAME_PRIO 0
+#define SAME_PRIO 1
 #endif
 
 /* end - control behaviour of the demo */
@@ -89,16 +89,17 @@
 
 #define philosopher_fork(x) (forks[x])
 
+#if DEBUG_PRINTF
 static void set_phil_state_pos(int id)
 {
-#if !DEBUG_PRINTF
 	printk("\x1b[%d;%dH", id + 1, 1);
-#endif
 }
+#endif /* DEBUG_PRINTF */
 
 #include <stdarg.h>
 static void print_phil_state(int id, const char *fmt, int32_t delay)
 {
+#if DEBUG_PRINTF
 	int prio = k_thread_priority_get(k_current_get());
 
 	set_phil_state_pos(id);
@@ -115,6 +116,7 @@ static void print_phil_state(int id, const char *fmt, int32_t delay)
 	}
 
 	printk("\n");
+#endif /* DEBUG_PRINTF */
 }
 
 static int32_t get_random_delay(int id, int period_in_ms)
@@ -181,20 +183,16 @@ void philosopher(void *id, void *unused1, void *unused2)
 
 static int new_prio(int phil)
 {
-#if defined(CONFIG_COOP_ENABLED) && defined(CONFIG_PREEMPT_ENABLED)
 #if SAME_PRIO
 	return 0;
-#else
+#elif defined(CONFIG_COOP_ENABLED) && defined(CONFIG_PREEMPT_ENABLED)
 	return -(phil - (NUM_PHIL/2));
-#endif
-#else
-#if defined(CONFIG_COOP_ENABLED)
+#elif defined(CONFIG_COOP_ENABLED)
 	return -phil - 2;
 #elif defined(CONFIG_PREEMPT_ENABLED)
 	return phil;
 #else
 	#error unpossible
-#endif
 #endif
 }
 
@@ -202,6 +200,7 @@ static void init_objects(void)
 {
 #if !STATIC_OBJS
 	for (int i = 0; i < NUM_PHIL; i++) {
+		philosopher_fork(i) = (fork_t)&fork_objs[i];
 		fork_init(philosopher_fork(i));
 	}
 #endif
@@ -244,7 +243,7 @@ static void start_threads(void)
 
 static void display_demo_description(void)
 {
-#if !DEBUG_PRINTF
+#if DEBUG_PRINTF
 	printk(DEMO_DESCRIPTION);
 #endif
 }

@@ -1,0 +1,41 @@
+# Copyright (C) 2026, Syntacore Ltd.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#     http://www.apache.org/licenses/LICENSE-2.0
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+# Kconfig - SCR4 SoC configuration options
+
+config SOC_SERIES
+	default "scr4" if SOC_SERIES_SCR4
+
+config SOC_SERIES_SCR4
+	bool
+	select SOC_FAMILY_SYNTACORE
+
+config SOC_SCR4
+	bool
+	select RISCV
+	select SOC_SERIES_SCR4
+	select CPU_SCR4_V1
+	select SOC_PREP_HOOK
+	select SOC_EARLY_INIT_HOOK
+	
+config SOC_SCR4_L2
+	bool
+	select RISCV
+	select SOC_SERIES_SCR4
+	select CPU_SCR4_V2
+	select SOC_PREP_HOOK
+	select SOC_EARLY_INIT_HOOK
+	select SOC_LATE_INIT_HOOK
+
+config SOC
+	default "SCR4" if SOC_SCR4
+	default "SCR4 L2" if SOC_SCR4_L2
